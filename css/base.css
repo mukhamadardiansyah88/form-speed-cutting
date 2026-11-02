@@ -1,12 +1,10 @@
 /* ============================================================
    BASE — Variabel, Reset, Background, Header, Tab, Panel,
-          Tombol Umum, Toast, Sync Overlay, Footer
+          Tombol Umum, Toast, Sync Overlay, Footer,
+          Rangkuman Mesin Aktif
    Form Speed Cutting
    ============================================================ */
 
-/* ============================================================
-   VARIABEL
-   ============================================================ */
 :root {
   --neon-cyan: #00f0ff;
   --neon-pink: #ff00e0;
@@ -23,9 +21,6 @@
   --text-dim: rgba(0, 240, 255, 0.75);
 }
 
-/* ============================================================
-   RESET
-   ============================================================ */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
 
@@ -39,9 +34,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ============================================================
-   BACKGROUND (STATIS)
-   ============================================================ */
+/* BACKGROUND */
 .bg-anim {
   position: fixed; inset: 0; z-index: -3;
   background:
@@ -77,18 +70,14 @@ body {
 .orb2 { width: 220px; height: 220px; background: var(--neon-pink);   bottom: 8%; right: 4%; }
 .orb3 { width: 200px; height: 200px; background: var(--neon-purple); top: 55%; left: 50%; transform: translate(-50%, -50%); }
 
-/* ============================================================
-   KONTEN
-   ============================================================ */
+/* KONTEN */
 .container {
   max-width: 1200px; margin: 0 auto;
   padding: 20px 16px 40px;
   position: relative; z-index: 1;
 }
 
-/* ============================================================
-   HEADER
-   ============================================================ */
+/* HEADER */
 header { text-align: center; padding: 20px 16px 14px; }
 
 .logo {
@@ -112,9 +101,7 @@ h1 {
   margin-top: 4px; text-transform: uppercase; font-weight: 600;
 }
 
-/* ============================================================
-   TAB SWITCH
-   ============================================================ */
+/* TAB SWITCH */
 .tab-switch {
   display: flex;
   gap: 8px;
@@ -151,9 +138,7 @@ h1 {
   box-shadow: 0 0 18px rgba(0, 240, 255, 0.5);
 }
 
-/* ============================================================
-   PANEL
-   ============================================================ */
+/* PANEL */
 .panel {
   background: var(--bg-panel);
   border: 1px solid var(--border-glow);
@@ -186,9 +171,7 @@ h1 {
   flex-shrink: 0;
 }
 
-/* ============================================================
-   FORM
-   ============================================================ */
+/* FORM */
 .form-row { display: flex; flex-wrap: wrap; gap: 14px; }
 .form-group { flex: 1; min-width: 180px; }
 
@@ -214,14 +197,8 @@ input[type="date"]:focus, input[type="text"]:focus, select:focus {
 
 select option { background: #0a0f23; color: var(--text-main); }
 
-/* ============================================================
-   MULTI CHECK
-   ============================================================ */
-.multi-check {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
+/* MULTI CHECK */
+.multi-check { display: flex; flex-wrap: wrap; gap: 10px; }
 
 .multi-check .chk {
   display: inline-flex;
@@ -248,9 +225,42 @@ select option { background: #0a0f23; color: var(--text-main); }
   margin: 0;
 }
 
-/* ============================================================
-   OVERLAY (UMUM)
-   ============================================================ */
+/* RANGKUMAN MESIN AKTIF */
+.rangkuman { display: flex; flex-direction: column; gap: 6px; }
+
+.rangkuman-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.rangkuman-row .r-label { font-size: 1rem; }
+.rangkuman-row .r-value { font-size: 1rem; }
+
+.rangkuman-row.r-total .r-label,
+.rangkuman-row.r-total .r-value {
+  color: #fff;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.7), 0 0 20px rgba(255, 0, 224, 0.35);
+}
+
+.rangkuman-row.r-aktif .r-label,
+.rangkuman-row.r-aktif .r-value {
+  color: var(--neon-green);
+  text-shadow: 0 0 8px rgba(57, 255, 20, 0.6);
+}
+
+.rangkuman-row.r-baris .r-label,
+.rangkuman-row.r-baris .r-value {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+}
+
+/* OVERLAY UMUM */
 .overlay {
   position: fixed; inset: 0;
   background: rgba(0, 5, 15, 0.85);
@@ -291,9 +301,7 @@ select option { background: #0a0f23; color: var(--text-main); }
 
 .modal-actions { display: flex; gap: 10px; }
 
-/* ============================================================
-   TOMBOL UMUM
-   ============================================================ */
+/* TOMBOL UMUM */
 .btn {
   flex: 1; padding: 12px; border-radius: 8px;
   font-family: inherit; font-size: 0.95rem; font-weight: 700;
@@ -330,9 +338,7 @@ select option { background: #0a0f23; color: var(--text-main); }
 .btn-danger:hover:not(:disabled) { box-shadow: 0 0 20px rgba(255, 46, 99, 0.85); }
 .btn-danger:disabled { opacity: 0.35; cursor: not-allowed; }
 
-/* ============================================================
-   TOAST
-   ============================================================ */
+/* TOAST */
 .toast {
   position: fixed; bottom: 24px; left: 50%;
   transform: translateX(-50%) translateY(120px);
@@ -350,9 +356,7 @@ select option { background: #0a0f23; color: var(--text-main); }
 .toast.error { border-color: var(--neon-red); box-shadow: 0 0 24px rgba(255, 46, 99, 0.6); }
 .toast.success { border-color: var(--neon-green); box-shadow: 0 0 24px rgba(57, 255, 20, 0.6); }
 
-/* ============================================================
-   LOADING
-   ============================================================ */
+/* LOADING */
 .loading {
   display: inline-block; width: 16px; height: 16px;
   border: 2px solid rgba(0, 240, 255, 0.3);
@@ -366,18 +370,14 @@ select option { background: #0a0f23; color: var(--text-main); }
 
 .loading-wrap { text-align: center; padding: 22px; color: var(--text-dim); letter-spacing: 1px; }
 
-/* ============================================================
-   SUMMARY
-   ============================================================ */
+/* SUMMARY */
 .summary {
   font-size: 0.85rem; color: var(--text-dim);
   text-align: center; margin-top: 12px;
   letter-spacing: 1.2px; font-weight: 600;
 }
 
-/* ============================================================
-   FOOTER CREDIT
-   ============================================================ */
+/* FOOTER CREDIT */
 .footer-credit {
   display: flex; align-items: center; justify-content: center;
   gap: 14px; margin-top: 30px; padding: 8px 0 4px;
@@ -402,9 +402,7 @@ select option { background: #0a0f23; color: var(--text-main); }
   filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.55)) drop-shadow(0 0 12px rgba(255, 0, 224, 0.35));
 }
 
-/* ============================================================
-   SYNC OVERLAY (FULL SCREEN)
-   ============================================================ */
+/* SYNC OVERLAY (FULL SCREEN) */
 .sync-overlay {
   position: fixed; inset: 0; z-index: 3500;
   display: none;
@@ -455,22 +453,16 @@ select option { background: #0a0f23; color: var(--text-main); }
   filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.5));
 }
 
-/* ============================================================
-   UTIL
-   ============================================================ */
+/* UTIL */
 .hidden { display: none !important; }
 
-/* ============================================================
-   REDUCED MOTION
-   ============================================================ */
+/* REDUCED MOTION */
 @media (prefers-reduced-motion: reduce) {
   .scan-line { display: none; }
   .sync-spinner .ring { animation-duration: 2s; }
 }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
+/* RESPONSIVE */
 @media (max-width: 640px) {
   h1 { font-size: 1.35rem; letter-spacing: 2px; }
   .logo { width: 56px; height: 56px; }
