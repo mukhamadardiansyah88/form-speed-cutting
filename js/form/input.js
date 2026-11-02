@@ -2,7 +2,10 @@
    FORM — OVERLAY INPUT (SPK + Speed + Suhu Dinamis)
    ============================================================
    - SPK lookup dari masterSPK (cache offline)
-   - Validasi: SPK valid selama ditemukan di database
+   - Validasi:
+     * SPK valid kalau ditemukan di database
+     * SPK valid kalau panjangPot ada isinya & bukan "0"
+       (kalau kosong/0 → "Bukan SPK Potong!")
    - Speed: input angka (tanpa min/max)
    - Suhu: dinamis per mesin (jumlah & label dari mesinDetailMap)
    - Mode: tambah / edit (pending / server)
@@ -302,14 +305,22 @@
     const key = String(noSPK).trim();
     const data = masterSPK[key];
 
-    /* Validasi SPK: cukup ada di database */
+    /* Validasi SPK:
+       1. Harus ditemukan di database
+       2. Harus punya panjangPot (bukan kosong, bukan "0")
+          → kalau tidak, "Bukan SPK Potong!" */
     let errorMsg = '';
     let valid = false;
 
     if (!data) {
       errorMsg = 'No SPK "' + key + '" tidak ditemukan di database.';
     } else {
-      valid = true;
+      const panjangPot = String(data.panjangPot || '').trim();
+      if (panjangPot === '' || panjangPot === '0') {
+        errorMsg = 'Bukan SPK Potong! Panjang Pot kosong.';
+      } else {
+        valid = true;
+      }
     }
 
     handleLookupResult({
@@ -346,6 +357,7 @@
     }
 
     if (!res.valid) {
+      /* Data ditemukan tapi bukan SPK Potong (panjangPot kosong/0) */
       currentSPKData = res.data || null;
       currentSPKValid = false;
       setSPKInfo(res.error || 'SPK tidak valid.', 'error');
@@ -359,7 +371,7 @@
     currentSPKData = res.data;
     currentSPKValid = true;
 
-    /* Preview notasi baru: <Jenis> <Tebal> x <Lebar> x <PanjangPot>    BD <BD> */
+    /* Preview notasi: <Jenis> <Tebal> x <Lebar[/Lipat]> x <PanjangPot>        BD <BD> */
     const teks = APP.formatSPKInfo(res.data);
     setSPKInfo(teks, 'success');
     playBeepSuccess();
