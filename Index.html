@@ -1,6 +1,309 @@
-<html>
-  <title>Say</title>
-  <Body>
-    <a1>Hello world</a1>
-  </Body>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <title>Form Speed Cutting</title>
+
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/9272/9272469.png">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9272/9272469.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/form.css">
+  <link rel="stylesheet" href="css/rekap.css">
+  <link rel="stylesheet" href="css/scanner.css">
+</head>
+<body>
+
+  <div class="bg-anim"></div>
+  <div class="grid-overlay"></div>
+  <div class="scanline"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+
+  <div class="container">
+
+    <header>
+      <img class="logo" src="https://cdn-icons-png.flaticon.com/512/9272/9272469.png" alt="Logo">
+      <h1>FORM SPEED CUTTING</h1>
+      <div class="subtitle">Production Speed Input System</div>
+    </header>
+
+    <div class="tab-switch" role="tablist">
+      <button class="tab-btn active" id="tabForm" data-tab="form" type="button">Input Speed</button>
+      <button class="tab-btn" id="tabRekap" data-tab="rekap" type="button">Rekap Speed</button>
+    </div>
+
+    <!-- ============================================================
+         HALAMAN 1: FORM INPUT
+         ============================================================ -->
+    <div id="pageForm">
+
+      <div class="panel">
+        <div class="panel-title">Kontrol Produksi</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tanggal">Tanggal</label>
+            <input type="date" id="tanggal">
+          </div>
+          <div class="form-group">
+            <label for="shift">Shift</label>
+            <select id="shift">
+              <option value="SHIFT-PAGI">SHIFT-PAGI</option>
+              <option value="SHIFT-SORE">SHIFT-SORE</option>
+              <option value="SHIFT-MALAM">SHIFT-MALAM</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Daftar Mesin</div>
+        <div id="mesinContainer">
+          <div class="loading-wrap">
+            <span class="loading"></span> Memuat daftar mesin...
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <button class="btn btn-success" id="btnSimpan" disabled>
+          💾 Simpan ke Sheet Inputan
+        </button>
+        <div class="summary" id="summary"></div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================
+         HALAMAN 2: REKAP
+         ============================================================ -->
+    <div id="pageRekap" class="hidden">
+
+      <div class="panel">
+        <div class="panel-title">Rentang Rekap</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="rekapTanggalAwal">Tanggal Awal</label>
+            <input type="date" id="rekapTanggalAwal">
+          </div>
+          <div class="form-group">
+            <label for="rekapTanggalAkhir">Tanggal Akhir</label>
+            <select id="rekapTanggalAkhir"></select>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:14px;">
+          <div class="form-group">
+            <label>Shift</label>
+            <div class="multi-check" id="filterShift">
+              <label class="chk"><input type="checkbox" value="SHIFT-PAGI" checked> Pagi</label>
+              <label class="chk"><input type="checkbox" value="SHIFT-SORE" checked> Sore</label>
+              <label class="chk"><input type="checkbox" value="SHIFT-MALAM" checked> Malam</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top:14px;">
+          <button class="btn btn-primary" id="btnLoadRekap" type="button">Tampilkan Rekap</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Legenda</div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-swatch swatch-warn"></span> &gt;1 data dalam cell</span>
+          <span class="legend-item"><span style="font-size:10px;color:var(--text-dim)">(Tahan / Klik 2x pada cell untuk detail)</span></span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Tabel Rekap</div>
+        <div class="rekap-scroll" id="rekapScroll">
+          <div class="rekap-empty" id="rekapEmpty">Pilih rentang tanggal lalu tekan "Tampilkan Rekap".</div>
+          <table class="rekap-table hidden" id="rekapTable">
+            <thead id="rekapThead"></thead>
+            <tbody id="rekapTbody"></tbody>
+          </table>
+        </div>
+        <div class="summary" id="rekapSummary"></div>
+      </div>
+
+    </div>
+
+    <footer class="footer-credit">
+      <div class="footer-line"></div>
+      <div class="footer-text">
+        PT MAHKOTA SUKSES MAKMUR · <span id="footerTahun">2026</span>
+      </div>
+      <div class="footer-line"></div>
+    </footer>
+
+  </div>
+
+  <!-- ============================================================
+       OVERLAY INPUT (SPK + Speed + Suhu dinamis)
+       ============================================================ -->
+  <div class="overlay" id="overlayInput">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">Mesin</div>
+        <button class="close-btn" id="btnCloseInput" type="button">✕</button>
+      </div>
+
+      <label for="spkInput">No SPK</label>
+      <div class="spk-input-row">
+        <input type="text" id="spkInput" placeholder="Ketik / scan No SPK..." autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+        <button class="scan-btn" id="btnScan" type="button">📷 Scan</button>
+      </div>
+
+      <div class="spk-info" id="spkInfo">
+        <div class="label">Informasi SPK</div>
+        <div class="value" id="spkInfoValue">—</div>
+      </div>
+
+      <div class="speed-group">
+        <label for="speedInput">Speed <span class="unit-hint">(pcs/menit)</span></label>
+        <input type="text" id="speedInput" placeholder="0" inputmode="decimal" autocomplete="off">
+      </div>
+
+      <!-- Suhu dinamis: di-generate oleh app-input.js -->
+      <div id="suhuContainer"></div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btnCancelInput" type="button">Batal</button>
+        <button class="btn btn-primary" id="btnOk" type="button" disabled>OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OVERLAY SCANNER
+       ============================================================ -->
+  <div class="overlay overlay-scanner" id="overlayScanner">
+    <div class="scanner-modal">
+      <div class="modal-header">
+        <div class="modal-title">📷 SCAN BARCODE / QR</div>
+        <button class="close-btn" id="btnCloseScanner" type="button">✕</button>
+      </div>
+
+      <div class="scanner-wrapper" id="scannerWrapper">
+        <div class="scanner-inner">
+          <div id="qr-reader"></div>
+          <div class="scan-line"></div>
+          <div class="corner tl"></div>
+          <div class="corner tr"></div>
+          <div class="corner bl"></div>
+          <div class="corner br"></div>
+        </div>
+      </div>
+
+      <div class="scanner-status" id="scannerStatus">
+        <span class="loading"></span> Menyiapkan kamera...
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OVERLAY LIST (daftar data per mesin)
+       ============================================================ -->
+  <div class="overlay" id="overlayList">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="listTitle">Daftar Data</div>
+        <button class="close-btn" id="btnCloseList" type="button">✕</button>
+      </div>
+
+      <div class="list-container" id="listContainer"></div>
+
+      <div class="modal-actions" style="margin-top:14px;">
+        <button class="btn btn-primary btn-add-row" id="btnTambahBaris" type="button">
+          + Tambah Baris Baru
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OVERLAY KONFIRMASI HAPUS
+       ============================================================ -->
+  <div class="overlay" id="overlayConfirm">
+    <div class="modal modal-confirm">
+      <div class="modal-header">
+        <div class="modal-title">Konfirmasi Hapus</div>
+        <button class="close-btn" id="btnCloseConfirm" type="button">✕</button>
+      </div>
+
+      <div class="confirm-text" id="confirmText">
+        Yakin hapus data ini?
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btnCancelConfirm" type="button">Batal</button>
+        <button class="btn btn-danger" id="btnYesConfirm" type="button">Ya, Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OVERLAY INFO DETAIL (read-only)
+       ============================================================ -->
+  <div class="overlay" id="overlayInfo">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Detail Informasi</div>
+        <button class="close-btn" id="btnCloseInfo" type="button">✕</button>
+      </div>
+
+      <div class="list-container" id="infoContainer"></div>
+
+      <div class="modal-actions" style="margin-top:18px;">
+        <button class="btn btn-primary" id="btnTutupInfo" type="button">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- ============================================================
+       SCRIPT — urutan penting!
+       ============================================================ -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <script src="js/config.js"></script>
+  <script src="js/scanner.js"></script>
+
+  <script src="js/core/state.js"></script>
+  <script src="js/core/util.js"></script>
+  <script src="js/core/gas.js"></script>
+  <script src="js/core/summary.js"></script>
+  <script src="js/core/init.js"></script>
+
+  <script src="js/form/render.js"></script>
+  <script src="js/form/list.js"></script>
+  <script src="js/form/input.js"></script>
+  <script src="js/form/suhu.js"></script>
+  <script src="js/form/speed.js"></script>
+  <script src="js/form/crud.js"></script>
+  <script src="js/form/events.js"></script>
+
+  <script src="js/rekap/filter.js"></script>
+  <script src="js/rekap/load.js"></script>
+  <script src="js/rekap/render.js"></script>
+  <script src="js/rekap/detail.js"></script>
+  <script src="js/rekap/rekapMesin.js"></script>
+
+  <script src="js/main.js"></script>
+
+</body>
 </html>
