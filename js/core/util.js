@@ -69,19 +69,17 @@
   APP.formatTebal = formatTebal;
 
   /* ============================================================
-     FORMAT SPK — NOTASI BARU CUTTING
+     FORMAT SPK — NOTASI CUTTING
      ============================================================
      Format:
-       <Jenis> <Tebal> x <Lebar> x <PanjangPot>    BD <BD>
-
-     Contoh:
-       "PP Keunguan 0,09 x 15 x 25    BD 18"
+       <Jenis> <Tebal> x <Lebar[/Lipat]> x <PanjangPot>        BD <BD>
 
      Aturan:
-     - Tebal 0,1 → tampil 0,10 ; 0,2 → tampil 0,20 ; lainnya apa adanya
-     - Kalau PanjangPot kosong → tampilkan "—" di posisi itu? TIDAK.
-       Kita tetap tampilkan format lengkap supaya user tahu ada yang kosong.
-     - Kalau BD kosong → tampil "BD —"
+     - Tebal 0,1 → 0,10 ; 0,2 → 0,20 ; lainnya apa adanya
+     - Kalau lipat ada & bukan "0" → lebar/lipat
+     - Kalau lipat kosong atau "0" → lebar saja
+     - Field kosong → tampil "—"
+     - Jarak PanjangPot ke BD = 8 spasi
      ============================================================ */
   function formatSPKInfo(d) {
     if (!d) return '—';
@@ -89,10 +87,17 @@
     const jenis = (d.jenisPlastik || '').trim() || '—';
     const tebal = formatTebal(d.tebal) || '—';
     const lebar = (d.lebar || '').trim() || '—';
+    const lipat = (d.lipat || '').trim();
     const panjangPot = (d.panjangPot || '').trim() || '—';
     const bd = (d.bd || '').trim() || '—';
 
-    return jenis + ' ' + tebal + ' x ' + lebar + ' x ' + panjangPot + '    BD ' + bd;
+    /* Gabung lebar/lipat kalau lipat ada & bukan "0" */
+    let ukuranLebar = lebar;
+    if (lipat !== '' && lipat !== '0') {
+      ukuranLebar = lebar + '/' + lipat;
+    }
+
+    return jenis + ' ' + tebal + ' x ' + ukuranLebar + ' x ' + panjangPot + '        BD ' + bd;
   }
   APP.formatSPKInfo = formatSPKInfo;
 
@@ -100,7 +105,6 @@
      TANGGAL
      ============================================================ */
 
-  /* Date → "yyyy-mm-dd" */
   function ymd(dateObj) {
     const y = dateObj.getFullYear();
     const m = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -109,21 +113,18 @@
   }
   APP.ymd = ymd;
 
-  /* "yyyy-mm-dd" → Date */
   function ymdToDate(ymdStr) {
     const parts = String(ymdStr).split('-');
     return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
   }
   APP.ymdToDate = ymdToDate;
 
-  /* "yyyy-mm-dd" → "dd-mm-yy" */
   function ymdToDDMMYY(ymdStr) {
     if (!ymdStr || ymdStr.length < 10) return ymdStr;
     return ymdStr.substring(8, 10) + '-' + ymdStr.substring(5, 7) + '-' + ymdStr.substring(2, 4);
   }
   APP.ymdToDDMMYY = ymdToDDMMYY;
 
-  /* "yyyy-mm-dd" → "dd/mm/yyyy" (locale id-ID) */
   function ymdToLocale(ymdStr) {
     if (!ymdStr || ymdStr.length < 10) return ymdStr;
     try { return ymdToDate(ymdStr).toLocaleDateString('id-ID'); }
@@ -131,7 +132,6 @@
   }
   APP.ymdToLocale = ymdToLocale;
 
-  /* "yyyy-mm-dd" + n hari → "yyyy-mm-dd" */
   function addDays(ymdStr, n) {
     const d = ymdToDate(ymdStr);
     d.setDate(d.getDate() + n);
@@ -139,7 +139,6 @@
   }
   APP.addDays = addDays;
 
-  /* Ambil tanggal & shift dari kontrol */
   function getTanggalShift() {
     const t = $('tanggal');
     const s = $('shift');
@@ -164,8 +163,6 @@
   /* ============================================================
      BEEP (WebAudio)
      ============================================================ */
-
-  /* Beep sukses: nada naik 4x */
   function playBeepSuccess() {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -187,7 +184,6 @@
   }
   APP.playBeepSuccess = playBeepSuccess;
 
-  /* Beep gagal: nada turun 2x */
   function beepFailOnce() {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -218,7 +214,6 @@
      ============================================================
      Input: suhuArr = [180, "", 200], suhuLabels = ["A","B","C"]
      Output: [{ label: "A", value: "180" }, { label: "C", value: "200" }]
-     — hanya yang terisi, urut labels
      ============================================================ */
   function getSuhuTerisi(suhuArr, suhuLabels) {
     const out = [];
