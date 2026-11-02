@@ -2,7 +2,7 @@
    FORM — OVERLAY INPUT (SPK + Speed + Suhu Dinamis)
    ============================================================
    - SPK lookup dari masterSPK (cache offline)
-   - Validasi: kode jenis SPK harus cocok dengan prefix mesin
+   - Validasi: SPK valid selama ditemukan di database
    - Speed: input angka (tanpa min/max)
    - Suhu: dinamis per mesin (jumlah & label dari mesinDetailMap)
    - Mode: tambah / edit (pending / server)
@@ -302,21 +302,14 @@
     const key = String(noSPK).trim();
     const data = masterSPK[key];
 
-    /* Cocokkan kode jenis SPK dengan prefix mesin */
+    /* Validasi SPK: cukup ada di database */
     let errorMsg = '';
     let valid = false;
 
     if (!data) {
       errorMsg = 'No SPK "' + key + '" tidak ditemukan di database.';
     } else {
-      const kodeSPK = String(data.kodeJenis || '').toUpperCase();
-      const prefixMesin = String(currentMesin || '').substring(0, 2).toUpperCase();
-
-      if (kodeSPK !== prefixMesin) {
-        errorMsg = 'Jenis plastik tidak cocok! Mesin: ' + prefixMesin + ' · SPK: ' + kodeSPK;
-      } else {
-        valid = true;
-      }
+      valid = true;
     }
 
     handleLookupResult({
@@ -355,7 +348,7 @@
     if (!res.valid) {
       currentSPKData = res.data || null;
       currentSPKValid = false;
-      setSPKInfo(res.error || 'Jenis plastik tidak cocok.', 'error');
+      setSPKInfo(res.error || 'SPK tidak valid.', 'error');
       playBeepFail();
       vibrate();
       updateOkState();
