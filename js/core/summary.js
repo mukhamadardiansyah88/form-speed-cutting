@@ -1,12 +1,8 @@
 /* ============================================================
-   CORE — SUMMARY (Ringkasan Total Baris + Tombol Simpan)
+   CORE — SUMMARY (Ringkasan Total Baris + Rangkuman Mesin Aktif)
    ============================================================
-   Di extruder ada rangkuman PP/PE/HD.
-   Di cutting TIDAK ADA kategori, jadi rangkuman disederhanakan:
-   - Total baris tersimpan (server)
-   - Total baris pending (belum disimpan)
-   - Jumlah mesin terisi
-   - Status tombol Simpan
+   - updateRangkuman(): isi #rTotalMesin, #rAktif, #rBaris
+   - updateSummary(): teks status + enable/disable tombol Simpan
    ============================================================ */
 
 (function () {
@@ -52,12 +48,52 @@
   }
 
   /* ============================================================
+     UPDATE RANGKUMAN MESIN AKTIF
+     ============================================================
+     Isi:
+     - #rTotalMesin : jumlah semua mesin di sheet
+     - #rAktif      : mesin yang punya data (server + pending)
+     - #rBaris      : total baris server (+ pending kalau ada)
+     ============================================================ */
+  function updateRangkuman() {
+    const daftarMesin = APP.getDaftarMesin() || [];
+    const hasilInput = APP.getHasilInput();
+    const pendingInput = APP.getPendingInput();
+
+    let aktif = 0;
+    let totalServer = 0;
+    let totalPending = 0;
+
+    daftarMesin.forEach(function (m) {
+      const s = (hasilInput[m] || []).length;
+      const p = (pendingInput[m] || []).length;
+      if (s + p > 0) aktif++;
+      totalServer += s;
+      totalPending += p;
+    });
+
+    const rTotal = $('rTotalMesin');
+    const rAktif = $('rAktif');
+    const rBaris = $('rBaris');
+
+    if (rTotal) rTotal.textContent = daftarMesin.length;
+    if (rAktif) rAktif.textContent = aktif;
+    if (rBaris) {
+      rBaris.textContent = totalServer + (totalPending > 0 ? ' (+' + totalPending + ')' : '');
+    }
+  }
+  APP.updateRangkuman = updateRangkuman;
+
+  /* ============================================================
      UPDATE SUMMARY (teks + tombol Simpan)
      ============================================================ */
   function updateSummary() {
     const el = $('summary');
     const btn = $('btnSimpan');
     if (!el || !btn) return;
+
+    /* Selalu update rangkuman mesin aktif */
+    updateRangkuman();
 
     /* Kalau sedang sync, jangan override */
     if (APP.getIsSyncing()) {
