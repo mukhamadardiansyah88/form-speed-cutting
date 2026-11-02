@@ -2,7 +2,7 @@
    CORE — INIT (Bootstrapper aplikasi)
    ============================================================
    Urutan init:
-   1. Set tanggal default + shift default + footer tahun
+   1. Set tanggal default (cutoff 06:00) + shift otomatis + footer tahun
    2. Init tabs
    3. Init kontrol rekap (tanggal & shift filter)
    4. Bind event form (dipanggil dari js/form/events.js)
@@ -50,7 +50,6 @@
   /* ============================================================
      LOAD DAFTAR MESIN + DETAIL (suhuLabels)
      ============================================================
-     getMesin      → array nama mesin urut sheet
      getMesinDetail → [{ mesin, supplier, suhuLabels: [...] }, ...]
      ============================================================ */
   function loadDaftarMesin() {
@@ -127,16 +126,49 @@
   APP.loadMasterSPK = loadMasterSPK;
 
   /* ============================================================
+     HITUNG TANGGAL DEFAULT (cutoff 06:00)
+     ============================================================
+     - Jam >= 06:00 → hari ini
+     - Jam < 06:00  → kemarin
+     (karena shift malam yang mulai 22:00 kemarin
+      masih berjalan sampai 06:00 hari ini)
+     ============================================================ */
+  function getTanggalDefault() {
+    const now = new Date();
+    const jam = now.getHours();
+    if (jam < 6) {
+      now.setDate(now.getDate() - 1);
+    }
+    return APP.ymd(now);
+  }
+  APP.getTanggalDefault = getTanggalDefault;
+
+  /* ============================================================
+     HITUNG SHIFT DEFAULT (cutoff 06:00, 8 jam/shift)
+     ============================================================
+     - 06:00 – 13:59 → SHIFT-PAGI
+     - 14:00 – 21:59 → SHIFT-SORE
+     - 22:00 – 05:59 → SHIFT-MALAM
+     ============================================================ */
+  function getShiftDefault() {
+    const jam = new Date().getHours();
+    if (jam >= 6 && jam < 14) return 'SHIFT-PAGI';
+    if (jam >= 14 && jam < 22) return 'SHIFT-SORE';
+    return 'SHIFT-MALAM';
+  }
+  APP.getShiftDefault = getShiftDefault;
+
+  /* ============================================================
      BOOTSTRAP (DOMContentLoaded)
      ============================================================ */
   document.addEventListener('DOMContentLoaded', function () {
 
-    /* 1. Nilai default */
+    /* 1. Nilai default tanggal (cutoff 06:00) + shift otomatis */
     const t = $('tanggal');
-    if (t) t.value = APP.ymd(new Date());
+    if (t) t.value = getTanggalDefault();
 
     const s = $('shift');
-    if (s) s.value = 'SHIFT-PAGI';
+    if (s) s.value = getShiftDefault();
 
     const ft = $('footerTahun');
     if (ft) ft.textContent = new Date().getFullYear();
