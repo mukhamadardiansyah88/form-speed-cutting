@@ -1,0 +1,329 @@
+/* ============================================================
+   FORM — Grid Mesin, Overlay Input (SPK/Speed/Suhu),
+          Overlay List, Overlay Confirm
+   Form Speed Cutting
+   ============================================================ */
+
+/* ============================================================
+   GRID MESIN (LIST DATAR — 40 MESIN, TANPA GROUPING)
+   ============================================================ */
+.mesin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
+}
+
+.mesin-btn {
+  padding: 10px 6px;
+  background: rgba(0, 20, 40, 0.7);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 8px; color: #c0e8ff;
+  font-family: inherit; font-size: 0.85rem; font-weight: 700;
+  letter-spacing: 1px; cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, color 0.2s;
+  position: relative; overflow: hidden; text-align: center;
+}
+
+.mesin-btn:hover {
+  border-color: var(--neon-cyan); color: #fff;
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.5);
+}
+
+.mesin-btn.filled {
+  background: linear-gradient(135deg, rgba(57, 255, 20, 0.28), rgba(0, 240, 255, 0.22));
+  border-color: var(--neon-green); color: #fff;
+  box-shadow: 0 0 16px rgba(57, 255, 20, 0.55);
+}
+
+.mesin-btn.filled::after {
+  content: '✓'; position: absolute;
+  top: 2px; right: 4px; font-size: 0.7rem;
+  color: var(--neon-green); text-shadow: 0 0 6px var(--neon-green);
+}
+
+/* ============================================================
+   OVERLAY INPUT — SPK & SPEED & SUHU
+   ============================================================ */
+.spk-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.spk-input-row input { flex: 1; }
+
+.scan-btn {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(255, 0, 224, 0.3), rgba(168, 85, 247, 0.3));
+  border: 1px solid var(--neon-pink);
+  border-radius: 8px; color: #fff;
+  font-family: inherit; font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; letter-spacing: 1px;
+  transition: box-shadow 0.2s; white-space: nowrap;
+  display: flex; align-items: center; gap: 4px;
+}
+
+.scan-btn:hover { box-shadow: 0 0 16px rgba(255, 0, 224, 0.7); }
+
+.spk-info {
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 12px; min-height: 62px;
+  font-size: 0.95rem; line-height: 1.5;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.spk-info .label {
+  color: var(--text-dim); font-size: 0.7rem;
+  letter-spacing: 1.8px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 4px;
+}
+
+.spk-info .value {
+  color: #fff; font-weight: 700; font-size: 1rem;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+  word-break: break-word;
+}
+
+.spk-info.error { background: rgba(255, 46, 99, 0.12); border-color: rgba(255, 46, 99, 0.6); }
+.spk-info.error .value { color: #ff6b8a; text-shadow: 0 0 8px rgba(255, 46, 99, 0.6); }
+
+.spk-info.success { background: rgba(57, 255, 20, 0.08); border-color: rgba(57, 255, 20, 0.5); }
+.spk-info.success .value { color: #b6ffb0; text-shadow: 0 0 8px rgba(57, 255, 20, 0.55); }
+
+/* ============================================================
+   SPEED INPUT
+   ============================================================ */
+.speed-group { margin-bottom: 14px; }
+.speed-group input {
+  font-size: 1.2rem; text-align: center; font-weight: 700; letter-spacing: 2px;
+}
+
+.unit-hint {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: none;
+  margin-left: 4px;
+  opacity: 0.85;
+}
+
+/* ============================================================
+   SUHU INPUT (DINAMIS)
+   ============================================================ */
+.suhu-section {
+  margin-bottom: 14px;
+  border-top: 1px dashed rgba(0, 240, 255, 0.2);
+  padding-top: 12px;
+}
+
+.suhu-section .suhu-section-title {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.suhu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.suhu-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.suhu-item label {
+  font-size: 0.7rem;
+  margin-bottom: 0;
+  letter-spacing: 1px;
+  color: #b6eaff;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.suhu-item .suhu-label-text {
+  font-weight: 700;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 6px rgba(0, 240, 255, 0.4);
+}
+
+.suhu-item input {
+  font-size: 1rem;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 8px 10px;
+}
+
+/* Kalau mesin tidak punya suhu */
+.suhu-empty {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-style: italic;
+  letter-spacing: 0.5px;
+  padding: 8px 0;
+}
+
+/* ============================================================
+   OVERLAY LIST (DAFTAR DATA PER MESIN)
+   ============================================================ */
+.list-container {
+  max-height: 52vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+}
+
+.list-container::-webkit-scrollbar { width: 6px; }
+.list-container::-webkit-scrollbar-track { background: rgba(0, 240, 255, 0.05); border-radius: 4px; }
+.list-container::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.45); border-radius: 4px; }
+
+.list-empty {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 20px 10px;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.data-card {
+  background: rgba(0, 20, 40, 0.7);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.12);
+}
+
+.data-card .card-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.data-card .card-field { display: flex; flex-direction: column; min-width: 90px; }
+
+.data-card .card-label {
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 700;
+}
+
+.data-card .card-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+  word-break: break-word;
+}
+
+/* Baris suhu di dalam card */
+.data-card .card-suhu-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(0, 240, 255, 0.15);
+}
+
+.data-card .card-suhu-item {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 0.8rem;
+}
+
+.data-card .card-suhu-label {
+  color: var(--text-dim);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+}
+
+.data-card .card-suhu-value {
+  color: #ffe98a;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+}
+
+.data-card .card-pending {
+  color: var(--neon-yellow);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.card-actions { display: flex; gap: 8px; }
+
+.btn-edit, .btn-delete {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  border: 1px solid;
+}
+
+.btn-edit {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: var(--neon-yellow);
+  color: #ffe98a;
+}
+.btn-edit:hover { box-shadow: 0 0 16px rgba(255, 215, 0, 0.6); }
+
+.btn-delete {
+  background: rgba(255, 46, 99, 0.15);
+  border-color: var(--neon-red);
+  color: #ff9fb5;
+}
+.btn-delete:hover { box-shadow: 0 0 16px rgba(255, 46, 99, 0.7); }
+
+.btn-add-row { width: 100%; font-size: 0.9rem; padding: 12px; }
+
+/* ============================================================
+   OVERLAY KONFIRMASI HAPUS
+   ============================================================ */
+.modal-confirm { max-width: 380px; }
+
+.confirm-text {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-main);
+  margin-bottom: 18px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  word-break: break-word;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 640px) {
+  .mesin-grid { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; }
+  .mesin-btn { font-size: 0.75rem; padding: 8px 4px; }
+  .list-container { max-height: 48vh; }
+
+  .suhu-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+  .suhu-item label { font-size: 0.65rem; }
+  .suhu-item input { font-size: 0.95rem; padding: 7px 8px; }
+}
