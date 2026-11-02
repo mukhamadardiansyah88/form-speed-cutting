@@ -1,0 +1,272 @@
+/* ============================================================
+   REKAP — Legenda, Tabel Rekap, Cell Interaktif,
+           Overlay Info Detail (dengan Suhu)
+   Form Speed Cutting
+   ============================================================ */
+
+/* ============================================================
+   LEGENDA REKAP
+   ============================================================ */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 240, 255, 0.4);
+}
+
+.swatch-warn { background: rgba(255, 215, 0, 0.4); border-color: var(--neon-yellow); }
+
+/* ============================================================
+   TABEL REKAP
+   ============================================================ */
+.rekap-scroll {
+  overflow: auto;
+  max-height: 70vh;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 10px;
+  box-shadow: inset 0 0 18px rgba(0, 240, 255, 0.06);
+}
+
+.rekap-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.rekap-scroll::-webkit-scrollbar-track { background: rgba(0, 240, 255, 0.05); border-radius: 4px; }
+.rekap-scroll::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.45); border-radius: 4px; }
+
+.rekap-empty {
+  text-align: center;
+  padding: 30px 12px;
+  color: var(--text-dim);
+  letter-spacing: 1.2px;
+  font-weight: 600;
+}
+
+.rekap-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: max-content;
+  min-width: 100%;
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 0.85rem;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Header baris pertama (tanggal) */
+.rekap-table thead tr:first-child th {
+  height: 36px !important;
+  padding-top: 0;
+  padding-bottom: 0;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+/* Header baris kedua (shift) menempel tepat di bawah baris pertama */
+.rekap-table thead tr:nth-child(2) th {
+  height: 36px !important;
+  padding-top: 0;
+  padding-bottom: 0;
+  position: sticky;
+  top: 36px;
+  z-index: 3;
+}
+
+.rekap-table th, .rekap-table td {
+  padding: 0 10px;
+  text-align: center;
+  white-space: nowrap;
+  border-right: 1px solid rgba(0, 240, 255, 0.22);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.22);
+}
+
+.rekap-table tbody td {
+  height: 32px;
+}
+
+/* === HEADER HIJAU SOLID === */
+.rekap-table th.header-date,
+.rekap-table th.header-shift,
+.rekap-table th.header-mesin-top {
+  background-color: var(--neon-green) !important;
+  color: #000 !important;
+  font-weight: 900 !important;
+  border-bottom: none !important;
+  text-shadow: none !important;
+  box-shadow: inset 0 -2px 0 #000;
+}
+
+/* Pojok Kiri Atas (Mesin) — z-index tertinggi */
+.rekap-table thead th.th-mesin {
+  left: 0;
+  z-index: 10 !important;
+}
+
+/* === KOLOM MESIN PINK SOLID === */
+.rekap-table td.cell-mesin {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  text-align: left;
+  min-width: 84px;
+  border-right: 1px solid rgba(0, 240, 255, 0.35);
+}
+
+.rekap-table td.cell-mesin-highlight {
+  background-color: var(--neon-pink) !important;
+  color: #fff !important;
+  font-weight: 900 !important;
+  border-bottom: 1px solid rgba(0,0,0,0.2) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8) !important;
+}
+
+.rekap-table tbody tr:nth-child(even) td.cell-mesin-highlight {
+  background-color: var(--neon-pink) !important;
+}
+
+/* Data speed */
+.rekap-table td.cell-speed { color: #dff7ff; }
+
+/* Cell yang bisa diklik (double click / long press) */
+.rekap-table td.cell-clickable {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.rekap-table td.cell-clickable:hover {
+  background: rgba(0, 240, 255, 0.15) !important;
+}
+
+/* Khusus kolom mesin, hover-nya beda warna (pink) */
+.rekap-table td.cell-mesin.cell-clickable:hover {
+  background: rgba(255, 0, 224, 0.25) !important;
+}
+
+/* Multi data dalam 1 cell */
+.rekap-table td.multi-data {
+  background: rgba(255, 215, 0, 0.18) !important;
+  color: #ffe98a;
+  box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.25);
+}
+
+/* ============================================================
+   OVERLAY INFO DETAIL (READ-ONLY, DENGAN SUHU)
+   ============================================================ */
+#overlayInfo .modal {
+  border-color: var(--neon-green);
+  box-shadow: 0 0 40px rgba(57, 255, 20, 0.3), inset 0 0 30px rgba(57, 255, 20, 0.05);
+}
+
+#overlayInfo .modal-title {
+  color: var(--neon-green);
+  text-shadow: 0 0 10px rgba(57, 255, 20, 0.6);
+  font-size: 1.05rem;
+}
+
+.info-card {
+  background: rgba(0, 20, 40, 0.8);
+  border: 1px solid rgba(57, 255, 20, 0.4);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 0 12px rgba(57, 255, 20, 0.1);
+}
+
+.info-card:last-child {
+  margin-bottom: 0;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(0, 240, 255, 0.2);
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  gap: 12px;
+}
+.info-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.info-label {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.info-value {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: right;
+  word-break: break-word;
+  white-space: normal;
+}
+.info-value.highlight {
+  color: var(--neon-cyan);
+  font-size: 1.1rem;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+}
+
+/* === SUHU DI INFO CARD (BARIS TAMBAHAN) === */
+.info-card .info-suhu-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(57, 255, 20, 0.25);
+  margin-top: 8px;
+}
+
+.info-card .info-suhu-item {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.info-card .info-suhu-label {
+  color: var(--text-dim);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.info-card .info-suhu-value {
+  color: #ffe98a;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 640px) {
+  .rekap-scroll { max-height: 60vh; }
+  .rekap-table { font-size: 0.75rem; }
+  .rekap-table th, .rekap-table td { padding: 0 6px; }
+
+  .rekap-table thead tr:first-child th { height: 34px !important; }
+  .rekap-table thead tr:nth-child(2) th { height: 34px !important; top: 34px; }
+
+  #overlayInfo .modal-title { font-size: 0.9rem; }
+}
