@@ -68,6 +68,24 @@
       </div>
 
       <div class="panel">
+        <div class="panel-title">Rangkuman Mesin Aktif</div>
+        <div class="rangkuman" id="rangkumanMesin">
+          <div class="rangkuman-row r-total">
+            <span class="r-label">Total Mesin</span>
+            <span class="r-value"><span id="rTotalMesin">0</span> Mesin</span>
+          </div>
+          <div class="rangkuman-row r-aktif">
+            <span class="r-label">Mesin Aktif</span>
+            <span class="r-value"><span id="rAktif">0</span> Mesin</span>
+          </div>
+          <div class="rangkuman-row r-baris">
+            <span class="r-label">Baris Data</span>
+            <span class="r-value"><span id="rBaris">0</span> baris</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
         <div class="panel-title">Daftar Mesin</div>
         <div id="mesinContainer">
           <div class="loading-wrap">
@@ -177,7 +195,7 @@
         <input type="text" id="speedInput" placeholder="0" inputmode="decimal" autocomplete="off">
       </div>
 
-      <!-- Suhu dinamis: di-generate oleh app-input.js -->
+      <!-- Suhu dinamis: di-generate oleh js/form/suhu.js -->
       <div id="suhuContainer"></div>
 
       <div class="modal-actions">
