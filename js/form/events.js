@@ -6,7 +6,7 @@
    - Overlay list (Close, Tambah Baris)
    - Overlay confirm (Close, Cancel, Yes)
    - Kontrol tanggal & shift (onChange → syncData)
-   - syncData: ambil data server, normalisasi field SPK lengkap
+   - syncData: ambil data server, normalisasi field SPK lengkap + jejer
    ============================================================ */
 
 (function () {
@@ -51,7 +51,6 @@
         }
         const data = res.data || [];
 
-        /* Kelompokkan by mesin */
         const hasilInput = {};
         data.forEach(function (row) {
           const mesin = String(row.mesin || '').trim();
@@ -62,8 +61,8 @@
             id: row.id,
             noSPK: row.noSPK,
             speed: row.speed,
+            jejer: String(row.jejer || '').trim(),
             suhu: normalizeSuhu(row.suhu),
-            /* Field SPK lengkap dari server (kolom F–L sheet Inputan) */
             spk: {
               jenis: String(row.jenis || '').trim(),
               cetak: String(row.cetak || '').trim(),
@@ -82,7 +81,6 @@
         APP.refreshMesinButtons();
         APP.updateSummary();
 
-        /* Kalau overlay list terbuka, render ulang */
         const overlayList = $('overlayList');
         const listMesin = APP.getListMesin();
         if (overlayList && overlayList.classList.contains('active') && listMesin) {
@@ -102,7 +100,7 @@
   APP.syncData = syncData;
 
   /* ============================================================
-     ON KONTROL CHANGE (tanggal / shift berubah)
+     ON KONTROL CHANGE
      ============================================================ */
   function onKontrolChange() {
     APP.setPendingInput({});
