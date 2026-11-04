@@ -5,8 +5,9 @@
    Menampilkan semua baris mesin tersebut untuk rentang tanggal
    & shift yang sedang aktif, lengkap dengan:
    - Tanggal & Shift
-   - Spesifikasi (formatSPKInfo)
+   - Spesifikasi (Jenis [Cetak <Cetakan>] Tebal x Lebar[/Lipat] x PanjangPot    BD BD)
    - Speed
+   - Jejer
    - Suhu (baris tambahan, hanya yang terisi)
    ============================================================ */
 
@@ -40,7 +41,7 @@
       ? mesinDetail.suhuLabels
       : [];
 
-    /* Index data: mapData[tanggal][shift] = [ { id, noSPK, speed, suhu } ] */
+    /* Index data: mapData[tanggal][shift] = [ { id, noSPK, speed, jejer, suhu } ] */
     const mapData = {};
     APP.getRekapRawData().forEach(function (r) {
       if (r.mesin !== mesin) return;
@@ -51,6 +52,7 @@
         id: r.id,
         noSPK: r.noSPK,
         speed: r.speed,
+        jejer: r.jejer || '',
         suhu: r.suhu || []
       });
     });
@@ -62,12 +64,12 @@
         const rows = (mapData[tgl] && mapData[tgl][sh]) || [];
 
         if (rows.length === 0) {
-          /* Slot kosong: tampilkan card "—" */
           adaBaris = true;
           container.appendChild(
             buildRekapCard(
               APP.ymdToDDMMYY(tgl),
               APP.SHIFT_LABEL[sh] || sh,
+              null,
               null,
               null,
               []
@@ -80,6 +82,7 @@
             const spkData = masterSPK[row.noSPK] || {};
             const spec = APP.formatSPKInfo({
               jenisPlastik: spkData.jenisPlastik || '',
+              cetakan: spkData.cetakan || '',
               tebal: spkData.tebal || '',
               lebar: spkData.lebar || '',
               lipat: spkData.lipat || '',
@@ -95,6 +98,7 @@
                 APP.SHIFT_LABEL[sh] || sh,
                 spec,
                 row.speed,
+                row.jejer,
                 suhuItems
               )
             );
@@ -119,9 +123,10 @@
      @param {string} shift   — "PAGI" | "SORE" | "MALAM"
      @param {string|null} ukuran — hasil formatSPKInfo, null kalau kosong
      @param {string|null} speed  — speed string, null kalau kosong
-     @param {Array} suhuItems    — [{ label, value }, ...] (hanya yang terisi)
+     @param {string|null} jejer  — jejer string, null kalau kosong
+     @param {Array} suhuItems    — [{ label, value }, ...]
      ============================================================ */
-  function buildRekapCard(tanggal, shift, ukuran, speed, suhuItems) {
+  function buildRekapCard(tanggal, shift, ukuran, speed, jejer, suhuItems) {
     const card = document.createElement('div');
     card.className = 'info-card';
 
@@ -146,6 +151,14 @@
     r3.innerHTML = '<span class="info-label">Speed</span>' +
       '<span class="info-value highlight">' + escapeHtml(speedText) + '</span>';
     card.appendChild(r3);
+
+    /* Jejer */
+    const jejerVal = (jejer != null && String(jejer).trim() !== '') ? String(jejer) : '—';
+    const r4 = document.createElement('div');
+    r4.className = 'info-row';
+    r4.innerHTML = '<span class="info-label">Jejer</span>' +
+      '<span class="info-value">' + escapeHtml(jejerVal) + '</span>';
+    card.appendChild(r4);
 
     /* Suhu (kalau ada) */
     if (suhuItems && suhuItems.length > 0) {
@@ -176,7 +189,7 @@
   }
 
   /* ============================================================
-     ESCAPE HTML (anti XSS)
+     ESCAPE HTML
      ============================================================ */
   function escapeHtml(str) {
     if (str == null) return '';
