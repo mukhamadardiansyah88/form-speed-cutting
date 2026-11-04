@@ -6,8 +6,8 @@
    - onSimpan: kirim semua pending ke server (tambahBanyak)
 
    Catatan: saat kirim ke server, sertakan field SPK lengkap
-   (jenis, cetak, tebal, lebar, lipat, panjangPot, bd) yang
-   diambil dari masterSPK[noSPK]. Kalau tidak ada → string kosong.
+   (jenis, cetak, tebal, lebar, lipat, panjangPot, bd) + jejer.
+   Field SPK diambil dari masterSPK[noSPK].
    ============================================================ */
 
 (function () {
@@ -19,10 +19,6 @@
 
   /* ============================================================
      AMBIL DATA SPK LENGKAP DARI MASTER
-     ============================================================
-     Return object dengan field siap kirim ke server:
-     { jenis, cetak, tebal, lebar, lipat, panjangPot, bd }
-     Kalau SPK tidak ditemukan → semua string kosong.
      ============================================================ */
   function getSPKPayload(noSPK) {
     const masterSPK = APP.getMasterSPK() || {};
@@ -40,7 +36,7 @@
   APP.getSPKPayload = getSPKPayload;
 
   /* ============================================================
-     ON OK (tombol OK di overlay input)
+     ON OK
      ============================================================ */
   function onOk() {
     const mesin = APP.getCurrentMesin();
@@ -53,6 +49,17 @@
     const speed = APP.getSpeedValue();
     if (speed === '') {
       showToast('Speed belum diisi.', 'error');
+      return;
+    }
+
+    /* Jejer (wajib) */
+    const jejer = APP.getJejerValue ? APP.getJejerValue() : '';
+    if (jejer === '') {
+      showToast('Jejer belum dipilih.', 'error');
+      return;
+    }
+    if (APP.isJejerValid && !APP.isJejerValid()) {
+      showToast('Jejer tidak valid. Cek kembali.', 'error');
       return;
     }
 
@@ -71,7 +78,6 @@
     const pendingInput = APP.getPendingInput();
     const hasilInput = APP.getHasilInput();
 
-    /* Ambil payload SPK lengkap dari master */
     const spkPayload = getSPKPayload(noSPK);
 
     /* ---------- EDIT PENDING ---------- */
@@ -80,6 +86,7 @@
       if (rows[pendingEditIndex]) {
         rows[pendingEditIndex].noSPK = noSPK;
         rows[pendingEditIndex].speed = speed;
+        rows[pendingEditIndex].jejer = jejer;
         rows[pendingEditIndex].suhu = suhuArr.slice();
         rows[pendingEditIndex].spk = spkPayload;
         pendingInput[mesin] = rows;
@@ -99,7 +106,6 @@
       const btnOk = $('btnOk');
       if (btnOk) btnOk.disabled = true;
 
-      /* Payload suhu & SPK: kirim sebagai JSON string (aman untuk JSONP) */
       const suhuJson = JSON.stringify(suhuArr);
       const spkJson = JSON.stringify(spkPayload);
 
@@ -108,6 +114,7 @@
         id: editId,
         noSPK: noSPK,
         speed: speed,
+        jejer: jejer,
         suhu: suhuJson,
         spk: spkJson
       })
@@ -133,6 +140,7 @@
     pendingInput[mesin].push({
       noSPK: noSPK,
       speed: speed,
+      jejer: jejer,
       suhu: suhuArr.slice(),
       spk: spkPayload
     });
@@ -215,7 +223,6 @@
     Object.keys(pendingInput).forEach(function (mesin) {
       const list = pendingInput[mesin] || [];
       list.forEach(function (r) {
-        /* r.spk = payload SPK lengkap dari master (jenis, cetak, tebal, ...) */
         const spk = r.spk || {};
         rows.push({
           tanggal: ctx.tanggal,
@@ -223,6 +230,7 @@
           mesin: mesin,
           noSPK: r.noSPK,
           speed: r.speed,
+          jejer: r.jejer || '',
           suhu: r.suhu || [],
           jenis: spk.jenis || '',
           cetak: spk.cetak || '',
