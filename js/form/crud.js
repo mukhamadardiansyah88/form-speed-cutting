@@ -4,6 +4,10 @@
    - onOk: validasi → simpan ke pending / update server / update pending
    - onHapusConfirmed: hapus server / hapus pending
    - onSimpan: kirim semua pending ke server (tambahBanyak)
+
+   Catatan: saat kirim ke server, sertakan field SPK lengkap
+   (jenis, cetak, tebal, lebar, lipat, panjangPot, bd) yang
+   diambil dari masterSPK[noSPK]. Kalau tidak ada → string kosong.
    ============================================================ */
 
 (function () {
@@ -12,6 +16,28 @@
   const $ = APP.$;
   const showToast = APP.showToast;
   const callGAS = APP.callGAS;
+
+  /* ============================================================
+     AMBIL DATA SPK LENGKAP DARI MASTER
+     ============================================================
+     Return object dengan field siap kirim ke server:
+     { jenis, cetak, tebal, lebar, lipat, panjangPot, bd }
+     Kalau SPK tidak ditemukan → semua string kosong.
+     ============================================================ */
+  function getSPKPayload(noSPK) {
+    const masterSPK = APP.getMasterSPK() || {};
+    const d = masterSPK[noSPK] || {};
+    return {
+      jenis: String(d.jenisPlastik || '').trim(),
+      cetak: String(d.cetakan || '').trim(),
+      tebal: String(d.tebal || '').trim(),
+      lebar: String(d.lebar || '').trim(),
+      lipat: String(d.lipat || '').trim(),
+      panjangPot: String(d.panjangPot || '').trim(),
+      bd: String(d.bd || '').trim()
+    };
+  }
+  APP.getSPKPayload = getSPKPayload;
 
   /* ============================================================
      ON OK (tombol OK di overlay input)
@@ -45,6 +71,9 @@
     const pendingInput = APP.getPendingInput();
     const hasilInput = APP.getHasilInput();
 
+    /* Ambil payload SPK lengkap dari master */
+    const spkPayload = getSPKPayload(noSPK);
+
     /* ---------- EDIT PENDING ---------- */
     if (formMode === 'edit' && pendingEditIndex !== null) {
       const rows = pendingInput[mesin] || [];
@@ -52,6 +81,7 @@
         rows[pendingEditIndex].noSPK = noSPK;
         rows[pendingEditIndex].speed = speed;
         rows[pendingEditIndex].suhu = suhuArr.slice();
+        rows[pendingEditIndex].spk = spkPayload;
         pendingInput[mesin] = rows;
         APP.setPendingInput(pendingInput);
       }
@@ -69,15 +99,17 @@
       const btnOk = $('btnOk');
       if (btnOk) btnOk.disabled = true;
 
-      /* Payload suhu: kirim array sebagai JSON string (aman untuk JSONP) */
+      /* Payload suhu & SPK: kirim sebagai JSON string (aman untuk JSONP) */
       const suhuJson = JSON.stringify(suhuArr);
+      const spkJson = JSON.stringify(spkPayload);
 
       callGAS({
         action: 'editData',
         id: editId,
         noSPK: noSPK,
         speed: speed,
-        suhu: suhuJson
+        suhu: suhuJson,
+        spk: spkJson
       })
         .then(function (res) {
           if (btnOk) btnOk.disabled = false;
@@ -101,7 +133,8 @@
     pendingInput[mesin].push({
       noSPK: noSPK,
       speed: speed,
-      suhu: suhuArr.slice()
+      suhu: suhuArr.slice(),
+      spk: spkPayload
     });
     APP.setPendingInput(pendingInput);
 
@@ -182,13 +215,22 @@
     Object.keys(pendingInput).forEach(function (mesin) {
       const list = pendingInput[mesin] || [];
       list.forEach(function (r) {
+        /* r.spk = payload SPK lengkap dari master (jenis, cetak, tebal, ...) */
+        const spk = r.spk || {};
         rows.push({
           tanggal: ctx.tanggal,
           shift: ctx.shift,
           mesin: mesin,
           noSPK: r.noSPK,
           speed: r.speed,
-          suhu: r.suhu || []
+          suhu: r.suhu || [],
+          jenis: spk.jenis || '',
+          cetak: spk.cetak || '',
+          tebal: spk.tebal || '',
+          lebar: spk.lebar || '',
+          lipat: spk.lipat || '',
+          panjangPot: spk.panjangPot || '',
+          bd: spk.bd || ''
         });
       });
     });
