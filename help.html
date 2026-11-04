@@ -1,0 +1,103 @@
+<!-- ============================================================
+     HELP — Aturan Main / Cara Pakai
+     ============================================================
+     File ini dimuat oleh overlay help (tombol ? di pojok kanan atas)
+     via fetch('help.html') di js/core/init.js.
+     Edit isi di sini tanpa menyentuh index.html.
+     ============================================================ -->
+
+<div class="help-content">
+
+  <h3>📋 Ringkasan Aplikasi</h3>
+  <p>
+    Aplikasi input &amp; rekap <strong>speed mesin cutting</strong> beserta
+    <strong>suhu thermocontrol</strong> per mesin. Data tersimpan di Google Sheets
+    melalui Google Apps Script.
+  </p>
+
+  <h3>🚀 Cara Input Data</h3>
+  <ol>
+    <li>Pilih <strong>Tanggal</strong> &amp; <strong>Shift</strong> di panel Kontrol Produksi.</li>
+    <li>Klik salah satu tombol mesin di panel <strong>Daftar Mesin</strong>.</li>
+    <li>Isi <strong>No SPK</strong> — bisa diketik manual atau scan barcode (tombol 📷).</li>
+    <li>Tunggu preview SPK muncul (hijau = valid).</li>
+    <li>Isi <strong>Speed</strong> (pcs/menit) dan <strong>Suhu</strong> (jika mesin punya thermocontrol).</li>
+    <li>Tekan <strong>OK</strong> untuk menambah baris (masuk pending).</li>
+    <li>Ulangi untuk mesin lain, lalu tekan <strong>Simpan ke Sheet Inputan</strong> untuk mengirim semua pending sekaligus.</li>
+  </ol>
+
+  <h3>✅ Validasi SPK</h3>
+  <p>SPK dianggap valid kalau:</p>
+  <ul>
+    <li>Ditemukan di database SPK (file ARD di Google Drive), <strong>DAN</strong></li>
+    <li>Punya <strong>Panjang Pot</strong> (bukan kosong, bukan 0).</li>
+  </ul>
+  <p>
+    Kalau tidak punya Panjang Pot → muncul pesan
+    <strong>"Bukan SPK Potong! Panjang Pot kosong."</strong> dan tombol OK dinonaktifkan.
+  </p>
+
+  <h3>🔍 Format Preview SPK</h3>
+  <p>Notasi preview:</p>
+  <pre>Jenis [Cetak &lt;Cetakan&gt;] Tebal x Lebar[/Lipat] x PanjangPot        BD BD</pre>
+  <ul>
+    <li>Contoh tanpa cetakan: <code>PP Keunguan 0,08 x 20/12 x 25        BD 17</code></li>
+    <li>Contoh dengan cetakan: <code>PP Keunguan Cetak Ayam Bawang Ungu 0,08 x 20/12 x 25        BD 17</code></li>
+    <li>Tebal <code>0,1</code> tampil <code>0,10</code>; tebal <code>0,2</code> tampil <code>0,20</code>.</li>
+    <li><strong>Lipat</strong> tampil (<code>/lipat</code>) hanya kalau ada isi &amp; bukan 0.</li>
+    <li><strong>Cetak</strong> tampil hanya kalau kolom "Cetakan Tambak Rejo" di DB SPK ada isi.</li>
+  </ul>
+
+  <h3>📊 Cara Rekap</h3>
+  <ol>
+    <li>Pindah ke tab <strong>Rekap Speed</strong>.</li>
+    <li>Pilih <strong>Tanggal Awal</strong> dan <strong>Tanggal Akhir</strong> (maks 7 hari).</li>
+    <li>Centang <strong>Shift</strong> yang ingin ditampilkan.</li>
+    <li>Klik <strong>Tampilkan Rekap</strong>.</li>
+    <li>Double click / tahan pada cell speed untuk melihat detail (No SPK, Spesifikasi, Speed, Suhu).</li>
+    <li>Double click / tahan pada nama mesin untuk melihat rekap lengkap mesin tersebut.</li>
+  </ol>
+
+  <h3>⏰ Default Tanggal &amp; Shift Otomatis</h3>
+  <ul>
+    <li>
+      <strong>Tanggal default:</strong> hari ini, kecuali jam &lt; 06:00 → kemarin
+      (cutoff awal shift pagi).
+    </li>
+    <li>
+      <strong>Shift default:</strong>
+      <ul>
+        <li>06:00 – 13:59 → PAGI</li>
+        <li>14:00 – 21:59 → SORE</li>
+        <li>22:00 – 05:59 → MALAM</li>
+      </ul>
+    </li>
+    <li>Nilai ini hanya di-set saat halaman dibuka / refresh. Kalau diubah manual, tidak ketimpa.</li>
+  </ul>
+
+  <h3>🌡️ Satuan</h3>
+  <ul>
+    <li><strong>Speed:</strong> pcs/menit</li>
+    <li><strong>Suhu:</strong> °C</li>
+  </ul>
+
+  <h3>💾 Edit &amp; Hapus</h3>
+  <ul>
+    <li><strong>Edit pending:</strong> baris yang belum disimpan bisa diubah lewat tombol ✏️ Edit.</li>
+    <li><strong>Edit server:</strong> baris tersimpan bisa diubah, langsung dikirim ke server.</li>
+    <li><strong>Hapus:</strong> pending atau server, dengan konfirmasi.</li>
+  </ul>
+
+  <h3>📝 Catatan</h3>
+  <ul>
+    <li>Suhu boleh kosong (mesin mati / tidak punya thermocontrol tertentu).</li>
+    <li>Anti-dobel: baris identik dalam 200 baris terakhir akan dilewati.</li>
+    <li>Pastikan jam device benar (auto time) supaya tanggal &amp; shift otomatis akurat.</li>
+  </ul>
+
+  <p class="help-footer">
+    <strong>PT Mahkota Sukses Makmur</strong><br>
+    Author: Mukhamad Ardiansyah
+  </p>
+
+</div>
