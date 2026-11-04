@@ -1,5 +1,5 @@
 /* ============================================================
-   FORM — Grid Mesin, Overlay Input (SPK/Speed/Suhu),
+   FORM — Grid Mesin, Overlay Input (SPK/Speed/Jejer/Suhu),
           Overlay List, Overlay Confirm
    Form Speed Cutting
    ============================================================ */
@@ -42,7 +42,7 @@
 }
 
 /* ============================================================
-   OVERLAY INPUT — SPK & SPEED & SUHU
+   OVERLAY INPUT — SPK & SPEED
    ============================================================ */
 .spk-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
 .spk-input-row input { flex: 1; }
@@ -103,6 +103,60 @@
   text-transform: none;
   margin-left: 4px;
   opacity: 0.85;
+}
+
+/* ============================================================
+   JEJER INPUT (DROPDOWN)
+   ============================================================ */
+.jejer-group { margin-bottom: 14px; }
+
+.jejer-group label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.jejer-select {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(0, 20, 40, 0.8);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--neon-cyan) 50%),
+    linear-gradient(135deg, var(--neon-cyan) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+}
+
+.jejer-select:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.55), inset 0 0 8px rgba(0, 240, 255, 0.12);
+}
+
+.jejer-select option {
+  background: #0a0f23;
+  color: var(--text-main);
 }
 
 /* ============================================================
@@ -326,4 +380,6 @@
   .suhu-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
   .suhu-item label { font-size: 0.65rem; }
   .suhu-item input { font-size: 0.95rem; padding: 7px 8px; }
+
+  .jejer-select { font-size: 1rem; padding: 9px 12px; padding-right: 32px; }
 }
