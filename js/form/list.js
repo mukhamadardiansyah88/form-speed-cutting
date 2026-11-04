@@ -4,7 +4,7 @@
    Menampilkan:
    - Baris tersimpan (server) di atas
    - Baris pending (belum disimpan) di bawah
-   Tiap card: No SPK, Speed, Suhu (hanya yang terisi)
+   Tiap card: No SPK, Speed, Jejer, Suhu (hanya yang terisi)
    Tombol: Edit, Hapus
    ============================================================ */
 
@@ -17,7 +17,7 @@
   let listMesin = null;
 
   /* ============================================================
-     GETTER internal (dipakai modul form lain)
+     GETTER / SETTER
      ============================================================ */
   function getListMesin() { return listMesin; }
   APP.getListMesin = getListMesin;
@@ -83,18 +83,17 @@
   /* ============================================================
      BUILD CARD
      ============================================================
-     row: { id?, noSPK, speed, suhu: [...] }
-     isPending: true/false
-     pendingIndex: index di array pending (kalau isPending)
+     row: { id?, noSPK, speed, jejer, suhu: [...] }
      ============================================================ */
   function buildCard(namaMesin, row, isPending, pendingIndex) {
     const card = document.createElement('div');
     card.className = 'data-card';
 
-    /* --- Info utama: No SPK + Speed --- */
+    /* --- Info utama: No SPK + Speed + Jejer --- */
     const info = document.createElement('div');
     info.className = 'card-info';
 
+    /* No SPK */
     const f1 = document.createElement('div');
     f1.className = 'card-field';
     const l1 = document.createElement('div');
@@ -105,6 +104,7 @@
     v1.textContent = row.noSPK || '—';
     f1.appendChild(l1); f1.appendChild(v1);
 
+    /* Speed */
     const f2 = document.createElement('div');
     f2.className = 'card-field';
     const l2 = document.createElement('div');
@@ -115,7 +115,18 @@
     v2.textContent = row.speed || '—';
     f2.appendChild(l2); f2.appendChild(v2);
 
-    info.appendChild(f1); info.appendChild(f2);
+    /* Jejer */
+    const f3 = document.createElement('div');
+    f3.className = 'card-field';
+    const l3 = document.createElement('div');
+    l3.className = 'card-label';
+    l3.textContent = 'Jejer';
+    const v3 = document.createElement('div');
+    v3.className = 'card-value';
+    v3.textContent = (row.jejer != null && String(row.jejer).trim() !== '') ? String(row.jejer) : '—';
+    f3.appendChild(l3); f3.appendChild(v3);
+
+    info.appendChild(f1); info.appendChild(f2); info.appendChild(f3);
     card.appendChild(info);
 
     /* --- Suhu (hanya yang terisi) --- */
@@ -167,11 +178,6 @@
 
   /* ============================================================
      BUILD SUHU ROW (hanya yang terisi)
-     ============================================================
-     Input:
-       row.suhu = [180, "", 200]
-       mesinDetailMap[namaMesin].suhuLabels = ["A","B","C"]
-     Output: <div class="card-suhu-row"> ... </div> atau null
      ============================================================ */
   function buildSuhuRow(row, namaMesin) {
     const detail = APP.getMesinDetailMap()[namaMesin];
