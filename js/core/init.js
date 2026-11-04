@@ -6,9 +6,10 @@
    2. Init tabs
    3. Init kontrol rekap (tanggal & shift filter)
    4. Bind event form (dipanggil dari js/form/events.js)
-   5. Tampilkan sync overlay
-   6. Load daftar mesin + detail mesin (dengan suhuLabels)
-   7. Load master SPK (DB Drive)
+   5. Bind event help (tombol ? → fetch help.html → overlay)
+   6. Tampilkan sync overlay
+   7. Load daftar mesin + detail mesin (dengan suhuLabels)
+   8. Load master SPK (DB Drive)
    ============================================================ */
 
 (function () {
@@ -49,8 +50,6 @@
 
   /* ============================================================
      LOAD DAFTAR MESIN + DETAIL (suhuLabels)
-     ============================================================
-     getMesinDetail → [{ mesin, supplier, suhuLabels: [...] }, ...]
      ============================================================ */
   function loadDaftarMesin() {
     const container = $('mesinContainer');
@@ -65,7 +64,6 @@
         }
         const detailArr = res.data || [];
 
-        /* Bangun mesinDetailMap + daftarMesin */
         const map = {};
         const list = [];
         detailArr.forEach(function (row) {
@@ -82,10 +80,7 @@
         APP.setMesinDetailMap(map);
         APP.setDaftarMesin(list);
 
-        /* Render grid mesin */
         if (APP.renderMesin) APP.renderMesin();
-
-        /* Sync data tanggal+shift aktif */
         if (APP.syncData) APP.syncData();
       })
       .catch(function (err) {
@@ -127,11 +122,6 @@
 
   /* ============================================================
      HITUNG TANGGAL DEFAULT (cutoff 06:00)
-     ============================================================
-     - Jam >= 06:00 → hari ini
-     - Jam < 06:00  → kemarin
-     (karena shift malam yang mulai 22:00 kemarin
-      masih berjalan sampai 06:00 hari ini)
      ============================================================ */
   function getTanggalDefault() {
     const now = new Date();
@@ -145,10 +135,6 @@
 
   /* ============================================================
      HITUNG SHIFT DEFAULT (cutoff 06:00, 8 jam/shift)
-     ============================================================
-     - 06:00 – 13:59 → SHIFT-PAGI
-     - 14:00 – 21:59 → SHIFT-SORE
-     - 22:00 – 05:59 → SHIFT-MALAM
      ============================================================ */
   function getShiftDefault() {
     const jam = new Date().getHours();
@@ -157,6 +143,96 @@
     return 'SHIFT-MALAM';
   }
   APP.getShiftDefault = getShiftDefault;
+
+  /* ============================================================
+     HELP OVERLAY (Aturan Main / Cara Pakai)
+     ============================================================
+     - Klik tombol #btnHelp → fetch help.html → tampilkan overlay
+     - Tutup: tombol ✕, tombol Tutup, atau klik luar modal
+     - Konten di-cache di memori supaya tidak fetch berulang
+     ============================================================ */
+  let helpHtmlCache = null;   /* string HTML dari help.html */
+  let helpLoading = false;    /* flag: sedang fetch */
+
+  function openHelpOverlay() {
+    const overlay = $('overlayHelp');
+    if (!overlay) return;
+
+    const container = $('helpContainer');
+    if (!container) return;
+
+    /* Kalau sudah pernah load → pakai cache */
+    if (helpHtmlCache !== null) {
+      container.innerHTML = helpHtmlCache;
+      overlay.classList.add('active');
+      return;
+    }
+
+    /* Kalau sedang load → jangan dobel */
+    if (helpLoading) {
+      overlay.classList.add('active');
+      return;
+    }
+
+    helpLoading = true;
+    container.innerHTML = '<div class="loading-wrap"><span class="loading"></span> Memuat bantuan...</div>';
+    overlay.classList.add('active');
+
+    fetch('help.html', { cache: 'no-cache' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+      })
+      .then(function (html) {
+        helpHtmlCache = html;
+        container.innerHTML = html;
+      })
+      .catch(function (err) {
+        console.warn('Gagal memuat help.html:', err);
+        container.innerHTML =
+          '<div class="list-empty" style="color:#ff6b8a;">' +
+          'Gagal memuat bantuan. Pastikan file <code>help.html</code> ada di folder yang sama dengan <code>index.html</code>.' +
+          '</div>';
+      })
+      .finally(function () {
+        helpLoading = false;
+      });
+  }
+  APP.openHelpOverlay = openHelpOverlay;
+
+  function closeHelpOverlay() {
+    const overlay = $('overlayHelp');
+    if (overlay) overlay.classList.remove('active');
+  }
+  APP.closeHelpOverlay = closeHelpOverlay;
+
+  function bindHelpEvents() {
+    const btnHelp = $('btnHelp');
+    if (btnHelp) btnHelp.addEventListener('click', openHelpOverlay);
+
+    const btnCloseHelp = $('btnCloseHelp');
+    if (btnCloseHelp) btnCloseHelp.addEventListener('click', closeHelpOverlay);
+
+    const btnTutupHelp = $('btnTutupHelp');
+    if (btnTutupHelp) btnTutupHelp.addEventListener('click', closeHelpOverlay);
+
+    /* Klik luar modal (background overlay) → tutup */
+    const overlayHelp = $('overlayHelp');
+    if (overlayHelp) {
+      overlayHelp.addEventListener('click', function (e) {
+        if (e.target === overlayHelp) closeHelpOverlay();
+      });
+    }
+
+    /* ESC → tutup */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        const ov = $('overlayHelp');
+        if (ov && ov.classList.contains('active')) closeHelpOverlay();
+      }
+    });
+  }
+  APP.bindHelpEvents = bindHelpEvents;
 
   /* ============================================================
      BOOTSTRAP (DOMContentLoaded)
@@ -176,22 +252,25 @@
     /* 2. Init tabs */
     if (APP.initTabs) APP.initTabs();
 
-    /* 3. Init kontrol rekap (tanggal + shift filter) */
+    /* 3. Init kontrol rekap */
     if (APP.initRekapControls) APP.initRekapControls();
 
-    /* 4. Bind event form (dari js/form/events.js) */
+    /* 4. Bind event form */
     if (APP.bindFormEvents) APP.bindFormEvents();
 
-    /* 5. Tampilkan overlay + set flag syncing */
+    /* 5. Bind event help (tombol ?) */
+    bindHelpEvents();
+
+    /* 6. Tampilkan overlay + set flag syncing */
     APP.ensureSyncOverlay();
     const ov = $('syncOverlay');
     if (ov) ov.classList.add('active');
     APP.setIsSyncing(true);
 
-    /* 6. Load daftar mesin (yang di dalamnya akan memanggil syncData) */
+    /* 7. Load daftar mesin */
     loadDaftarMesin();
 
-    /* 7. Load master SPK secara paralel */
+    /* 8. Load master SPK paralel */
     loadMasterSPK();
   });
 
