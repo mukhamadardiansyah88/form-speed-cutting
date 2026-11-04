@@ -72,12 +72,17 @@
      FORMAT SPK — NOTASI CUTTING
      ============================================================
      Format:
-       <Jenis> <Tebal> x <Lebar[/Lipat]> x <PanjangPot>        BD <BD>
+       <Jenis> [Cetak <Cetakan>] <Tebal> x <Lebar[/Lipat]> x <PanjangPot>        BD <BD>
+
+     Contoh:
+       - Tanpa cetakan: PP Keunguan 0,08 x 20/12 x 25        BD 17
+       - Dengan cetakan: PP Keunguan Cetak Ayam Bawang Ungu 0,08 x 20/12 x 25        BD 17
 
      Aturan:
      - Tebal 0,1 → 0,10 ; 0,2 → 0,20 ; lainnya apa adanya
      - Kalau lipat ada & bukan "0" → lebar/lipat
      - Kalau lipat kosong atau "0" → lebar saja
+     - Kalau cetakan ada isi → sisipkan "Cetak <isi>" setelah jenis
      - Field kosong → tampil "—"
      - Jarak PanjangPot ke BD = 8 spasi
      ============================================================ */
@@ -85,6 +90,7 @@
     if (!d) return '—';
 
     const jenis = (d.jenisPlastik || '').trim() || '—';
+    const cetakan = (d.cetakan || '').trim();
     const tebal = formatTebal(d.tebal) || '—';
     const lebar = (d.lebar || '').trim() || '—';
     const lipat = (d.lipat || '').trim();
@@ -97,7 +103,13 @@
       ukuranLebar = lebar + '/' + lipat;
     }
 
-    return jenis + ' ' + tebal + ' x ' + ukuranLebar + ' x ' + panjangPot + '        BD ' + bd;
+    /* Sisipkan "Cetak <isi>" kalau ada */
+    let bagianCetak = '';
+    if (cetakan !== '' && cetakan !== '0') {
+      bagianCetak = 'Cetak ' + cetakan + ' ';
+    }
+
+    return jenis + ' ' + bagianCetak + tebal + ' x ' + ukuranLebar + ' x ' + panjangPot + '        BD ' + bd;
   }
   APP.formatSPKInfo = formatSPKInfo;
 
