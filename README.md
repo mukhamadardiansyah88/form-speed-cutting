@@ -1,13 +1,14 @@
 # Form Speed Cutting
 
-Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermocontrol** per mesin. Terintegrasi dengan **Google Sheets** via **Google Apps Script (GAS)** sebagai backend.
+Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermocontrol** dan **jejer** per mesin. Terintegrasi dengan **Google Sheets** via **Google Apps Script (GAS)** sebagai backend.
 
 ---
 
 ## Fitur
 
-- **Input Speed + Suhu Dinamis**
+- **Input Speed + Jejer + Suhu Dinamis**
   - Speed dalam `pcs/menit`
+  - Jejer: dropdown 1..maxJejer (dari sheet Mesin J2) — berapa banyak plastik rol disusun berjajar dalam sekali potong
   - Suhu dalam `°C`
   - Jumlah & label inputbox suhu otomatis menyesuaikan konfigurasi tiap mesin di sheet `Mesin`
     - PT01: 1 suhu (`A`)
@@ -29,7 +30,7 @@ Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermoco
 - **Rekap Tabel**
   - Filter: tanggal (max 7 hari) + shift (pagi/sore/malam)
   - Baris = mesin (urut sheet), kolom = tanggal x shift
-  - Cell speed bisa double click / long press untuk detail lengkap (No SPK, Spesifikasi, Speed, Suhu)
+  - Cell speed bisa double click / long press untuk detail lengkap (No SPK, Spesifikasi, Speed, Jejer, Suhu)
   - Klik nama mesin untuk rekap semua baris mesin tsb dalam rentang aktif
   - Multi-data dalam satu cell ditandai warna kuning
 
@@ -50,16 +51,22 @@ Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermoco
     - 14:00 - 21:59: `SHIFT-SORE`
     - 22:00 - 05:59: `SHIFT-MALAM`
 
+- **Help Overlay (Aturan Main / Cara Pakai)**
+  - Tombol mengambang `?` di pojok kanan atas (selalu terlihat)
+  - Klik → overlay berisi aturan main (dari `help.html`)
+  - Konten di-cache di memori setelah load pertama
+
 ---
 
 ## Struktur Project
 
     form-speed-cutting/
     |-- index.html                  # SATU-SATUNYA HTML (pintu masuk)
+    |-- help.html                   # Konten overlay help (Aturan Main)
     |
     |-- css/
-    |   |-- base.css                # reset, var, bg, header, tab, panel, tombol, toast, sync, rangkuman
-    |   |-- form.css                # grid mesin, overlay input SPK/Speed/Suhu, list, confirm
+    |   |-- base.css                # reset, var, bg, header, tab, panel, tombol, toast, sync, rangkuman, tombol help, overlay help
+    |   |-- form.css                # grid mesin, overlay input SPK/Speed/Jejer/Suhu, list, confirm
     |   |-- rekap.css               # filter, tabel rekap, overlay info detail
     |   |-- scanner.css             # overlay scanner
     |
@@ -68,32 +75,33 @@ Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermoco
     |   |-- scanner.js              # wrapper html5-qrcode
     |   |
     |   |-- core/
-    |   |   |-- state.js            # state global + getter/setter
+    |   |   |-- state.js            # state global + getter/setter (termasuk maxJejer)
     |   |   |-- util.js             # $, showToast, formatSPKInfo, beep, tanggal, dll
     |   |   |-- gas.js              # callGAS (JSONP), sync overlay
     |   |   |-- summary.js          # ringkasan total baris + rangkuman mesin aktif
-    |   |   |-- init.js             # bootstrapper (default tanggal & shift)
+    |   |   |-- init.js             # bootstrapper (default tanggal & shift, help overlay, load konfigurasi)
     |   |
     |   |-- form/
     |   |   |-- render.js           # render grid mesin
-    |   |   |-- list.js             # overlay list per mesin
-    |   |   |-- input.js            # overlay input (SPK/Speed/Suhu) + SPK lookup
+    |   |   |-- list.js             # overlay list per mesin (dengan jejer)
+    |   |   |-- input.js            # overlay input (SPK/Speed/Jejer/Suhu) + SPK lookup
     |   |   |-- suhu.js             # input suhu dinamis
+    |   |   |-- jejer.js            # dropdown jejer (1..maxJejer)
     |   |   |-- speed.js            # sanitasi input speed
-    |   |   |-- crud.js             # OK / Hapus / Simpan batch (payload SPK lengkap)
+    |   |   |-- crud.js             # OK / Hapus / Simpan batch (payload SPK lengkap + jejer)
     |   |   |-- events.js           # bind event tab form + syncData
     |   |
     |   |-- rekap/
     |   |   |-- filter.js           # tanggal + shift filter
     |   |   |-- load.js             # loadRekap
     |   |   |-- render.js           # render tabel
-    |   |   |-- detail.js           # detail cell (dengan suhu)
-    |   |   |-- rekapMesin.js       # rekap per mesin
+    |   |   |-- detail.js           # detail cell (dengan suhu + jejer)
+    |   |   |-- rekapMesin.js       # rekap per mesin (dengan suhu + jejer)
     |   |
     |   |-- main.js                 # verifikasi modul + debug helper
     |
     |-- gas/
-    |   |-- Code.gs                 # backend Google Apps Script
+    |   |-- Code.gs                 # backend Google Apps Script (termasuk clearCache & cekCache)
     |
     |-- README.md                   # file ini
 
@@ -107,9 +115,14 @@ Siapkan Spreadsheet dengan 3 sheet:
 
 #### Sheet Mesin
 
-Header:
+Header (baris 1, kolom A-H):
 
     Mesin | Supplier | Suhu 1 | Suhu 2 | Suhu 3 | Suhu 4 | Suhu 5 | Suhu 6
+
+Konfigurasi tambahan (kolom J):
+
+    J1: Max Jejer
+    J2: 12   (angka, contoh)
 
 Contoh isi:
 
@@ -121,6 +134,7 @@ Contoh isi:
 - Baris kedua dst = daftar mesin
 - Kolom Suhu = nama thermocontrol (bukan nilai). Kosongkan kalau mesin tidak punya thermocontrol itu.
 - Urutan mesin di sini = urutan tampil di web app.
+- J2 = angka max jejer (contoh: 12). Dipakai untuk dropdown jejer di overlay input.
 
 #### Sheet Alamat
 
@@ -134,13 +148,13 @@ Contoh isi:
 
 #### Sheet Inputan
 
-Header (19 kolom, A-S):
+Header (20 kolom, A-T):
 
-    ID | Tanggal | Shift | Mesin | No SPK | Jenis | Cetak | Tebal | Lebar | Lipat | Panjang Potong | BD | Speed | Suhu 1 | Suhu 2 | Suhu 3 | Suhu 4 | Suhu 5 | Suhu 6
+    ID | Tanggal | Shift | Mesin | No SPK | Jenis | Cetak | Tebal | Lebar | Lipat | Panjang Potong | BD | Speed | Jejer | Suhu 1 | Suhu 2 | Suhu 3 | Suhu 4 | Suhu 5 | Suhu 6
 
 - Jangan isi manual, diisi otomatis oleh web app.
 - Jalankan `migrasiID()` sekali kalau sheet lama belum punya kolom ID.
-- Kalau migrasi dari versi lama (header 12 kolom), kosongkan sheet Inputan dulu atau backup, karena posisi kolom bergeser.
+- Kalau migrasi dari versi lama (header 19 kolom atau kurang), **kosongkan sheet Inputan dulu** atau **backup**, karena posisi kolom bergeser.
 
 ### 2. Database SPK di Drive (File ARD)
 
@@ -170,26 +184,20 @@ Yang dipakai aplikasi:
 
 1. Buka Spreadsheet, lalu Extensions > Apps Script
 2. Copy isi `gas/Code.gs` ke `Code.gs` di editor GAS
-3. Hapus cache DB SPK (biar baca ulang dengan format baru):
-   - Di editor GAS, buat fungsi sementara:
-
-         function clearCache() {
-           CacheService.getScriptCache().remove('DB_SPK_CACHE_2026');
-         }
-
-   - Klik Run > clearCache, lalu hapus fungsi setelah selesai
-4. Deploy > New deployment > Web app
+3. Deploy > New deployment > Web app
    - Execute as: Me
    - Who has access: Anyone
-5. Copy URL `/exec`, tempel di `js/config.js`:
+4. Copy URL `/exec`, tempel di `js/config.js`:
 
        GAS_URL: 'https://script.google.com/macros/s/.../exec'
+
+5. (Opsional) Setelah update file ARD di Drive, jalankan `clearCache()` sekali di editor GAS untuk paksa baca ulang. Gunakan `cekCache()` untuk verifikasi.
 
 ### 4. Frontend
 
 #### Opsi A - GitHub Pages / Hosting Statis
 
-Upload semua file (`index.html`, `css/`, `js/`) ke repo / hosting statis. Buka `index.html` di browser.
+Upload semua file (`index.html`, `help.html`, `css/`, `js/`) ke repo / hosting statis. Buka `index.html` di browser.
 
 #### Opsi B - GAS HTML Service
 
@@ -200,6 +208,25 @@ Kalau ingin deploy langsung dari GAS (URL `/exec` yang sama untuk frontend + bac
 - Atau pakai `HtmlService.createTemplateFromFile` + `include()` per file `.html`.
 
 Rekomendasi: gunakan GitHub Pages untuk frontend (Opsi A). Paling simpel dan tetap rapi karena folder `css/` & `js/` dipertahankan.
+
+---
+
+## Utilitas Cache DB SPK (di GAS)
+
+Cache DB SPK disimpan di `CacheService` dengan TTL 6 jam. Cache ini **hanya** menyimpan data SPK dari file ARD (bukan data Inputan).
+
+| Fungsi | Kapan dipakai |
+|--------|---------------|
+| `clearCache()` | Setelah update file ARD di Drive, supaya SPK baru langsung dikenali web (tanpa tunggu 6 jam) |
+| `cekCache()` | Verifikasi apakah cache masih ada (via Log eksekusi) |
+
+**Cara pakai:**
+1. Buka editor GAS
+2. Pilih fungsi `clearCache` di dropdown, klik **Run**
+3. Lihat **Log eksekusi** (View > Logs atau Ctrl+Enter)
+4. Untuk verifikasi, jalankan `cekCache`
+
+**Catatan:** Reload web **tidak** clear cache GAS. Cache hanya bisa dihapus lewat `clearCache()` atau menunggu 6 jam.
 
 ---
 
@@ -219,12 +246,13 @@ Rekomendasi: gunakan GitHub Pages untuk frontend (Opsi A). Paling simpel dan tet
 |--------|-----------|--------|
 | `getMesin` | - | `[namaMesin, ...]` |
 | `getMesinDetail` | - | `[{ mesin, supplier, suhuLabels[] }, ...]` |
+| `getKonfigurasi` | - | `{ maxJejer }` |
 | `getMasterSPK` | `tahun` | `{ [noSPK]: { ..., cetakan, panjangPot, bd } }` |
-| `getData` | `tanggal, shift` | `[{ id, mesin, noSPK, jenis, cetak, tebal, lebar, lipat, panjangPot, bd, speed, suhu[] }, ...]` |
-| `getRekap` | `tanggalAwal, tanggalAkhir` | `[{ id, tanggal, mesin, noSPK, ..., speed, suhu[] }, ...]` |
+| `getData` | `tanggal, shift` | `[{ id, mesin, noSPK, jenis, cetak, tebal, lebar, lipat, panjangPot, bd, speed, jejer, suhu[] }, ...]` |
+| `getRekap` | `tanggalAwal, tanggalAkhir` | Sama seperti getData |
 | `tambahData` | `row` (JSON) | `{ id }` |
 | `tambahBanyak` | `rows` (JSON array) | `{ jumlah, gagal, duplikat }` |
-| `editData` | `id, noSPK, speed, suhu, spk` (JSON) | `{ success }` |
+| `editData` | `id, noSPK, speed, jejer, suhu, spk` (JSON) | `{ success }` |
 | `hapusData` | `id` | `{ success }` |
 | `ping` | - | `{ message: 'pong' }` |
 
@@ -249,6 +277,7 @@ Cyberpunk / neon. Warna utama:
 
 - Satuan Speed: `pcs/menit`
 - Satuan Suhu: `°C`
+- Jejer: angka 1..maxJejer (dari sheet Mesin J2), wajib diisi
 - Tebal `0,1` jadi `0,10`; tebal `0,2` jadi `0,20` (khusus dua ini, lainnya apa adanya)
 - Suhu boleh kosong (mesin mati / tidak punya thermocontrol tertentu)
 - Lipat tampil (`/lipat`) hanya kalau ada isi & bukan `0`
@@ -258,6 +287,7 @@ Cyberpunk / neon. Warna utama:
 - Filter rekap: hanya tanggal + shift (tidak ada kategori)
 - Tanggal default: hari ini, kecuali jam < 06:00 maka kemarin (cutoff shift pagi)
 - Shift default otomatis: 06:00-13:59 Pagi, 14:00-21:59 Sore, 22:00-05:59 Malam
+- Reload web tidak clear cache DB SPK — gunakan `clearCache()` di GAS atau tunggu 6 jam
 
 ---
 
