@@ -4,8 +4,9 @@
    Dibuka saat double click / long press pada cell speed.
    Menampilkan:
    - No SPK
-   - Spesifikasi (Jenis Tebal x Lebar x PanjangPot    BD BD)
-   - Speed
+   - Spesifikasi (Jenis [Cetak <Cetakan>] Tebal x Lebar[/Lipat] x PanjangPot    BD BD)
+   - Speed (pcs/menit)
+   - Jejer
    - Suhu (baris tambahan, hanya yang terisi)
    ============================================================ */
 
@@ -18,7 +19,7 @@
      BUKA INFO DETAIL
      ============================================================
      @param {Object} context
-       { mesin, tanggal, shift, items: [ { id, noSPK, speed, suhu } ] }
+       { mesin, tanggal, shift, items: [ { id, noSPK, speed, jejer, suhu } ] }
      ============================================================ */
   function bukaInfoDetail(context) {
     const items = context.items;
@@ -41,7 +42,9 @@
       const detail = {
         noSPK: item.noSPK,
         speed: item.speed,
+        jejer: item.jejer || '',
         jenisPlastik: spkData.jenisPlastik || '',
+        cetakan: spkData.cetakan || '',
         tebal: spkData.tebal || '',
         lebar: spkData.lebar || '',
         lipat: spkData.lipat || '',
@@ -49,7 +52,6 @@
         bd: spkData.bd || ''
       };
 
-      /* Ambil suhuLabels mesin ini */
       const mesinDetail = mesinDetailMap[context.mesin];
       const suhuLabels = (mesinDetail && Array.isArray(mesinDetail.suhuLabels))
         ? mesinDetail.suhuLabels
@@ -72,8 +74,8 @@
   /* ============================================================
      BUILD INFO CARD
      ============================================================
-     @param {Object} d — { noSPK, speed, jenisPlastik, tebal, lebar, lipat, panjangPot, bd }
-     @param {Array} suhuItems — [{ label, value }, ...] (hanya yang terisi)
+     @param {Object} d — { noSPK, speed, jejer, jenisPlastik, cetakan, tebal, lebar, lipat, panjangPot, bd }
+     @param {Array} suhuItems — [{ label, value }, ...]
      ============================================================ */
   function buildInfoCard(d, suhuItems) {
     const card = document.createElement('div');
@@ -89,6 +91,7 @@
     /* Spesifikasi */
     const spec = APP.formatSPKInfo({
       jenisPlastik: d.jenisPlastik,
+      cetakan: d.cetakan,
       tebal: d.tebal,
       lebar: d.lebar,
       lipat: d.lipat,
@@ -109,6 +112,14 @@
       '<span class="info-value highlight">' + escapeHtml(d.speed || '—') + ' ' +
       escapeHtml(APP.SATUAN_SPEED) + '</span>';
     card.appendChild(r3);
+
+    /* Jejer */
+    const jejerVal = (d.jejer != null && String(d.jejer).trim() !== '') ? String(d.jejer) : '—';
+    const r4 = document.createElement('div');
+    r4.className = 'info-row';
+    r4.innerHTML = '<span class="info-label">Jejer</span>' +
+      '<span class="info-value">' + escapeHtml(jejerVal) + '</span>';
+    card.appendChild(r4);
 
     /* Suhu (kalau ada) */
     if (suhuItems && suhuItems.length > 0) {
@@ -139,7 +150,7 @@
   }
 
   /* ============================================================
-     ESCAPE HTML (anti XSS)
+     ESCAPE HTML
      ============================================================ */
   function escapeHtml(str) {
     if (str == null) return '';
@@ -161,7 +172,7 @@
   APP.closeInfoOverlay = closeInfoOverlay;
 
   /* ============================================================
-     BIND (DOMContentLoaded)
+     BIND
      ============================================================ */
   document.addEventListener('DOMContentLoaded', function () {
     const btnCloseInfo = $('btnCloseInfo');
