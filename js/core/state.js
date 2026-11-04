@@ -16,23 +16,24 @@
   /* Daftar mesin (array of string, urut sheet Mesin) */
   let daftarMesin = [];
 
-  /* Detail mesin: { [namaMesin]: { mesin, supplier, suhuLabels: [..] } }
-     suhuLabels = array label suhu yang terisi di sheet Mesin
-     Contoh PT01: suhuLabels = ['A']
-     Contoh PT26: suhuLabels = ['A1','A2','A3','B1','B2','B3']
-     Contoh PTPM: suhuLabels = ['Pisau','Rubber Tube 1','Rubber Tube 2','Tank','Spray Gun 1','Spray Gun 2'] */
+  /* Detail mesin: { [namaMesin]: { mesin, supplier, suhuLabels: [..] } } */
   let mesinDetailMap = {};
 
-  /* Data tersimpan di server: { [mesin]: [ { id, noSPK, speed, suhu: [..] } ] } */
+  /* Data tersimpan di server: { [mesin]: [ { id, noSPK, speed, jejer, suhu: [..], spk: {...} } ] } */
   let hasilInput = {};
 
-  /* Data belum disimpan (pending): { [mesin]: [ { noSPK, speed, suhu: [..] } ] } */
+  /* Data belum disimpan (pending): { [mesin]: [ { noSPK, speed, jejer, suhu: [..], spk: {...} } ] } */
   let pendingInput = {};
 
-  /* Master SPK dari DB Drive (cache): { [noSPK]: { noSPK, jenisPlastik, kodeJenis, tebal, lebar, lipat, panjangPot, bd } } */
+  /* Master SPK dari DB Drive (cache):
+     { [noSPK]: { noSPK, jenisPlastik, kodeJenis, cetakan, tebal, lebar, lipat, panjangPot, bd } } */
   let masterSPK = {};
   let masterSPKLoaded = false;
   let masterSPKLoading = false;
+
+  /* Konfigurasi global (dari sheet Mesin)
+     maxJejer: angka maksimum jejer (dari cell J2 sheet Mesin) */
+  let maxJejer = 1;
 
   /* Flag operasi */
   let isSyncing = false;
@@ -51,14 +52,12 @@
      KONSTANTA
      ============================================================ */
 
-  /* Label shift untuk tampilan */
   const SHIFT_LABEL = {
     'SHIFT-PAGI': 'PAGI',
     'SHIFT-SORE': 'SORE',
     'SHIFT-MALAM': 'MALAM'
   };
 
-  /* Satuan (untuk label di inputbox) */
   const SATUAN_SPEED = 'pcs/menit';
   const SATUAN_SUHU = '°C';
 
@@ -91,6 +90,13 @@
 
   APP.getMasterSPKLoading = function () { return masterSPKLoading; };
   APP.setMasterSPKLoading = function (v) { masterSPKLoading = v; };
+
+  /* --- Konfigurasi: Max Jejer --- */
+  APP.getMaxJejer = function () { return maxJejer; };
+  APP.setMaxJejer = function (v) {
+    const n = Number(v);
+    maxJejer = (isNaN(n) || n < 1) ? 1 : Math.floor(n);
+  };
 
   /* --- Flag Operasi --- */
   APP.getIsSyncing = function () { return isSyncing; };
