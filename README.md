@@ -16,10 +16,15 @@ Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermoco
 
 - **Validasi SPK**
   - No SPK dicek ke database SPK di Google Drive
-  - Kode jenis (2 huruf awal, mis. `PP`) harus cocok dengan prefix mesin (mis. `PT`)
-  - Preview notasi SPK: `Jenis Tebal x Lebar x PanjangPot    BD BD`
-    - Contoh: `PP Keunguan 0,09 x 15 x 25    BD 18`
+  - SPK valid kalau:
+    - Ditemukan di database, DAN
+    - Punya `Panjang Pot` (bukan kosong, bukan `0`); kalau tidak, tampil **"Bukan SPK Potong! Panjang Pot kosong."**
+  - Preview notasi SPK: `Jenis [Cetak <Cetakan>] Tebal x Lebar[/Lipat] x PanjangPot        BD BD`
+    - Contoh tanpa cetakan: `PP Keunguan 0,08 x 20/12 x 25        BD 17`
+    - Contoh dengan cetakan: `PP Keunguan Cetak Ayam Bawang Ungu 0,08 x 20/12 x 25        BD 17`
     - Khusus tebal `0,1` jadi `0,10` dan `0,2` jadi `0,20`
+    - `Lipat` tampil (`/lipat`) hanya kalau ada isi & bukan `0`
+    - `Cetak <Cetakan>` disisipkan hanya kalau `Cetakan Tambak Rejo` ada isi
 
 - **Rekap Tabel**
   - Filter: tanggal (max 7 hari) + shift (pagi/sore/malam)
@@ -38,6 +43,13 @@ Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermoco
   - Tekan Simpan untuk kirim semua pending sekaligus (`tambahBanyak`)
   - Anti-dobel di backend (cek 200 baris terakhir)
 
+- **Default Tanggal & Shift Otomatis**
+  - Tanggal default: hari ini, kecuali jam < 06:00 maka kemarin (cutoff shift pagi)
+  - Shift default berdasarkan jam:
+    - 06:00 - 13:59: `SHIFT-PAGI`
+    - 14:00 - 21:59: `SHIFT-SORE`
+    - 22:00 - 05:59: `SHIFT-MALAM`
+
 ---
 
 ## Struktur Project
@@ -46,7 +58,7 @@ Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermoco
     |-- index.html                  # SATU-SATUNYA HTML (pintu masuk)
     |
     |-- css/
-    |   |-- base.css                # reset, var, bg, header, tab, panel, tombol, toast, sync
+    |   |-- base.css                # reset, var, bg, header, tab, panel, tombol, toast, sync, rangkuman
     |   |-- form.css                # grid mesin, overlay input SPK/Speed/Suhu, list, confirm
     |   |-- rekap.css               # filter, tabel rekap, overlay info detail
     |   |-- scanner.css             # overlay scanner
@@ -59,8 +71,8 @@ Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermoco
     |   |   |-- state.js            # state global + getter/setter
     |   |   |-- util.js             # $, showToast, formatSPKInfo, beep, tanggal, dll
     |   |   |-- gas.js              # callGAS (JSONP), sync overlay
-    |   |   |-- summary.js          # ringkasan total baris + tombol simpan
-    |   |   |-- init.js             # bootstrapper
+    |   |   |-- summary.js          # ringkasan total baris + rangkuman mesin aktif
+    |   |   |-- init.js             # bootstrapper (default tanggal & shift)
     |   |
     |   |-- form/
     |   |   |-- render.js           # render grid mesin
@@ -68,7 +80,7 @@ Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermoco
     |   |   |-- input.js            # overlay input (SPK/Speed/Suhu) + SPK lookup
     |   |   |-- suhu.js             # input suhu dinamis
     |   |   |-- speed.js            # sanitasi input speed
-    |   |   |-- crud.js             # OK / Hapus / Simpan batch
+    |   |   |-- crud.js             # OK / Hapus / Simpan batch (payload SPK lengkap)
     |   |   |-- events.js           # bind event tab form + syncData
     |   |
     |   |-- rekap/
@@ -93,7 +105,7 @@ Aplikasi web untuk input & rekap **speed mesin cutting** beserta **suhu thermoco
 
 Siapkan Spreadsheet dengan 3 sheet:
 
-#### Sheet `Mesin`
+#### Sheet Mesin
 
 Header:
 
@@ -110,7 +122,7 @@ Contoh isi:
 - Kolom Suhu = nama thermocontrol (bukan nilai). Kosongkan kalau mesin tidak punya thermocontrol itu.
 - Urutan mesin di sini = urutan tampil di web app.
 
-#### Sheet `Alamat`
+#### Sheet Alamat
 
 Header:
 
@@ -120,33 +132,56 @@ Contoh isi:
 
     2026 | 1AbC... (ID file Drive database SPK)
 
-#### Sheet `Inputan`
+#### Sheet Inputan
 
-Header:
+Header (19 kolom, A-S):
 
-    ID | Tanggal | Shift | Mesin | No SPK | Speed | Suhu 1 | Suhu 2 | Suhu 3 | Suhu 4 | Suhu 5 | Suhu 6
+    ID | Tanggal | Shift | Mesin | No SPK | Jenis | Cetak | Tebal | Lebar | Lipat | Panjang Potong | BD | Speed | Suhu 1 | Suhu 2 | Suhu 3 | Suhu 4 | Suhu 5 | Suhu 6
 
 - Jangan isi manual, diisi otomatis oleh web app.
 - Jalankan `migrasiID()` sekali kalau sheet lama belum punya kolom ID.
+- Kalau migrasi dari versi lama (header 12 kolom), kosongkan sheet Inputan dulu atau backup, karena posisi kolom bergeser.
 
-### 2. Database SPK di Drive
+### 2. Database SPK di Drive (File ARD)
 
-File teks/CSV (dipisah `%`) dengan header:
+File teks/CSV (dipisah `%`). Header lengkap (18 kolom):
 
-    No SPK%Jenis Plastik%Tebal (mm)%Lebar (cm)%Lipat (cm)%Panjang Pot (cm)%BD
+    No SPK%Cetakan Tambak Rejo%Tanggal Order%Tanggal Kirim%No SO%Pelanggan%Jenis Plastik%Tebal (mm)%Lebar (cm)%Lipat (cm)%Panjang Pot (cm)%Panjang Rol (m)%BD%Berat (kg)%Sudah Diprint%Diserahkan Ke Produksi%Selesai%Batal
 
 Contoh baris:
 
-    12345%PP Keunguan%0,09%15%5%25%18
+    12345%Ayam Bawang Ungu%2026-01-01%2026-01-05%SO001%PT ABC%PP Keunguan%0,09%15%5%25%1000%18%25%Sudah%Sudah%Belum%Tidak
+
+Yang dipakai aplikasi:
+
+| Kolom | Dipakai? |
+|-------|----------|
+| No SPK | Ya |
+| Cetakan Tambak Rejo | Ya (tampil di preview) |
+| Jenis Plastik | Ya |
+| Tebal (mm) | Ya |
+| Lebar (cm) | Ya |
+| Lipat (cm) | Ya (kondisional) |
+| Panjang Pot (cm) | Ya (wajib untuk validasi) |
+| BD | Ya |
+| Kolom lain | Tidak (diabaikan) |
 
 ### 3. Google Apps Script
 
 1. Buka Spreadsheet, lalu Extensions > Apps Script
 2. Copy isi `gas/Code.gs` ke `Code.gs` di editor GAS
-3. Deploy > New deployment > Web app
+3. Hapus cache DB SPK (biar baca ulang dengan format baru):
+   - Di editor GAS, buat fungsi sementara:
+
+         function clearCache() {
+           CacheService.getScriptCache().remove('DB_SPK_CACHE_2026');
+         }
+
+   - Klik Run > clearCache, lalu hapus fungsi setelah selesai
+4. Deploy > New deployment > Web app
    - Execute as: Me
    - Who has access: Anyone
-4. Copy URL `/exec`, tempel di `js/config.js`:
+5. Copy URL `/exec`, tempel di `js/config.js`:
 
        GAS_URL: 'https://script.google.com/macros/s/.../exec'
 
@@ -184,12 +219,12 @@ Rekomendasi: gunakan GitHub Pages untuk frontend (Opsi A). Paling simpel dan tet
 |--------|-----------|--------|
 | `getMesin` | - | `[namaMesin, ...]` |
 | `getMesinDetail` | - | `[{ mesin, supplier, suhuLabels[] }, ...]` |
-| `getMasterSPK` | `tahun` | `{ [noSPK]: { ..., panjangPot, bd } }` |
-| `getData` | `tanggal, shift` | `[{ id, mesin, noSPK, speed, suhu[] }, ...]` |
-| `getRekap` | `tanggalAwal, tanggalAkhir` | `[{ id, tanggal, mesin, noSPK, shift, speed, suhu[] }, ...]` |
+| `getMasterSPK` | `tahun` | `{ [noSPK]: { ..., cetakan, panjangPot, bd } }` |
+| `getData` | `tanggal, shift` | `[{ id, mesin, noSPK, jenis, cetak, tebal, lebar, lipat, panjangPot, bd, speed, suhu[] }, ...]` |
+| `getRekap` | `tanggalAwal, tanggalAkhir` | `[{ id, tanggal, mesin, noSPK, ..., speed, suhu[] }, ...]` |
 | `tambahData` | `row` (JSON) | `{ id }` |
 | `tambahBanyak` | `rows` (JSON array) | `{ jumlah, gagal, duplikat }` |
-| `editData` | `id, noSPK, speed, suhu` (JSON) | `{ success }` |
+| `editData` | `id, noSPK, speed, suhu, spk` (JSON) | `{ success }` |
 | `hapusData` | `id` | `{ success }` |
 | `ping` | - | `{ message: 'pong' }` |
 
@@ -216,9 +251,13 @@ Cyberpunk / neon. Warna utama:
 - Satuan Suhu: `°C`
 - Tebal `0,1` jadi `0,10`; tebal `0,2` jadi `0,20` (khusus dua ini, lainnya apa adanya)
 - Suhu boleh kosong (mesin mati / tidak punya thermocontrol tertentu)
-- Lipat disimpan di DB tapi tidak ditampilkan di preview SPK (preview pakai Panjang Pot)
+- Lipat tampil (`/lipat`) hanya kalau ada isi & bukan `0`
+- Cetak tampil (`Cetak <isi>`) hanya kalau `Cetakan Tambak Rejo` ada isi
+- SPK valid hanya kalau `Panjang Pot` ada isi & bukan `0`
 - Rentang tanggal rekap max 7 hari
 - Filter rekap: hanya tanggal + shift (tidak ada kategori)
+- Tanggal default: hari ini, kecuali jam < 06:00 maka kemarin (cutoff shift pagi)
+- Shift default otomatis: 06:00-13:59 Pagi, 14:00-21:59 Sore, 22:00-05:59 Malam
 
 ---
 
