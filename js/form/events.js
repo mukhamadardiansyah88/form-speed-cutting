@@ -6,12 +6,31 @@
    - Overlay list (Close, Tambah Baris)
    - Overlay confirm (Close, Cancel, Yes)
    - Kontrol tanggal & shift (onChange → syncData)
+   - syncData: ambil data server, normalisasi field SPK lengkap
    ============================================================ */
 
 (function () {
 
   const APP = window.APP = window.APP || {};
   const $ = APP.$;
+
+  /* ============================================================
+     NORMALISASI SUHU (array / string JSON → array string)
+     ============================================================ */
+  function normalizeSuhu(raw) {
+    if (Array.isArray(raw)) {
+      return raw.map(function (v) { return (v == null) ? '' : String(v); });
+    }
+    if (raw != null && typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed.map(function (v) { return (v == null) ? '' : String(v); });
+        }
+      } catch (e) { /* biarkan kosong */ }
+    }
+    return [];
+  }
 
   /* ============================================================
      SYNC DATA — Ambil data server untuk tanggal & shift aktif
@@ -39,29 +58,21 @@
           if (!mesin) return;
           if (!hasilInput[mesin]) hasilInput[mesin] = [];
 
-          /* Normalisasi suhu: pastikan array angka/string */
-          let suhuArr = [];
-          if (Array.isArray(row.suhu)) {
-            suhuArr = row.suhu.map(function (v) {
-              return (v == null) ? '' : String(v);
-            });
-          } else if (row.suhu != null) {
-            /* Backend mungkin kirim string JSON */
-            try {
-              const parsed = JSON.parse(row.suhu);
-              if (Array.isArray(parsed)) {
-                suhuArr = parsed.map(function (v) {
-                  return (v == null) ? '' : String(v);
-                });
-              }
-            } catch (e) { /* biarkan kosong */ }
-          }
-
           hasilInput[mesin].push({
             id: row.id,
             noSPK: row.noSPK,
             speed: row.speed,
-            suhu: suhuArr
+            suhu: normalizeSuhu(row.suhu),
+            /* Field SPK lengkap dari server (kolom F–L sheet Inputan) */
+            spk: {
+              jenis: String(row.jenis || '').trim(),
+              cetak: String(row.cetak || '').trim(),
+              tebal: String(row.tebal || '').trim(),
+              lebar: String(row.lebar || '').trim(),
+              lipat: String(row.lipat || '').trim(),
+              panjangPot: String(row.panjangPot || '').trim(),
+              bd: String(row.bd || '').trim()
+            }
           });
         });
 
