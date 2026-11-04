@@ -8,8 +8,9 @@
    4. Bind event form (dipanggil dari js/form/events.js)
    5. Bind event help (tombol ? → fetch help.html → overlay)
    6. Tampilkan sync overlay
-   7. Load daftar mesin + detail mesin (dengan suhuLabels)
-   8. Load master SPK (DB Drive)
+   7. Load konfigurasi (Max Jejer dari sheet Mesin J2)
+   8. Load daftar mesin + detail mesin (dengan suhuLabels)
+   9. Load master SPK (DB Drive)
    ============================================================ */
 
 (function () {
@@ -47,6 +48,33 @@
     if (btnRekap) btnRekap.addEventListener('click', function () { switchTab('rekap'); });
   }
   APP.initTabs = initTabs;
+
+  /* ============================================================
+     LOAD KONFIGURASI (Max Jejer dari sheet Mesin J2)
+     ============================================================
+     GAS action: getKonfigurasi → { success, data: { maxJejer } }
+     ============================================================ */
+  function loadKonfigurasi() {
+    APP.callGAS({ action: 'getKonfigurasi' })
+      .then(function (res) {
+        if (res && res.success && res.data) {
+          const mj = Number(res.data.maxJejer);
+          if (!isNaN(mj) && mj >= 1) {
+            APP.setMaxJejer(mj);
+          } else {
+            APP.setMaxJejer(1);
+          }
+        } else {
+          console.warn('Gagal memuat konfigurasi:', res ? res.error : 'unknown');
+          APP.setMaxJejer(1);
+        }
+      })
+      .catch(function (err) {
+        console.warn('Error memuat konfigurasi:', err);
+        APP.setMaxJejer(1);
+      });
+  }
+  APP.loadKonfigurasi = loadKonfigurasi;
 
   /* ============================================================
      LOAD DAFTAR MESIN + DETAIL (suhuLabels)
@@ -146,13 +174,9 @@
 
   /* ============================================================
      HELP OVERLAY (Aturan Main / Cara Pakai)
-     ============================================================
-     - Klik tombol #btnHelp → fetch help.html → tampilkan overlay
-     - Tutup: tombol ✕, tombol Tutup, atau klik luar modal
-     - Konten di-cache di memori supaya tidak fetch berulang
      ============================================================ */
-  let helpHtmlCache = null;   /* string HTML dari help.html */
-  let helpLoading = false;    /* flag: sedang fetch */
+  let helpHtmlCache = null;
+  let helpLoading = false;
 
   function openHelpOverlay() {
     const overlay = $('overlayHelp');
@@ -161,14 +185,12 @@
     const container = $('helpContainer');
     if (!container) return;
 
-    /* Kalau sudah pernah load → pakai cache */
     if (helpHtmlCache !== null) {
       container.innerHTML = helpHtmlCache;
       overlay.classList.add('active');
       return;
     }
 
-    /* Kalau sedang load → jangan dobel */
     if (helpLoading) {
       overlay.classList.add('active');
       return;
@@ -216,7 +238,6 @@
     const btnTutupHelp = $('btnTutupHelp');
     if (btnTutupHelp) btnTutupHelp.addEventListener('click', closeHelpOverlay);
 
-    /* Klik luar modal (background overlay) → tutup */
     const overlayHelp = $('overlayHelp');
     if (overlayHelp) {
       overlayHelp.addEventListener('click', function (e) {
@@ -224,7 +245,6 @@
       });
     }
 
-    /* ESC → tutup */
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         const ov = $('overlayHelp');
@@ -258,7 +278,7 @@
     /* 4. Bind event form */
     if (APP.bindFormEvents) APP.bindFormEvents();
 
-    /* 5. Bind event help (tombol ?) */
+    /* 5. Bind event help */
     bindHelpEvents();
 
     /* 6. Tampilkan overlay + set flag syncing */
@@ -267,10 +287,13 @@
     if (ov) ov.classList.add('active');
     APP.setIsSyncing(true);
 
-    /* 7. Load daftar mesin */
+    /* 7. Load konfigurasi (Max Jejer) — paralel, tidak memblokir */
+    loadKonfigurasi();
+
+    /* 8. Load daftar mesin */
     loadDaftarMesin();
 
-    /* 8. Load master SPK paralel */
+    /* 9. Load master SPK paralel */
     loadMasterSPK();
   });
 
