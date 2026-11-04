@@ -191,7 +191,7 @@
   </div>
 
   <!-- ============================================================
-       OVERLAY INPUT (SPK + Speed + Suhu dinamis)
+       OVERLAY INPUT (SPK + Speed + Jejer + Suhu dinamis)
        ============================================================ -->
   <div class="overlay" id="overlayInput">
     <div class="modal">
@@ -215,6 +215,9 @@
         <label for="speedInput">Speed <span class="unit-hint">(pcs/menit)</span></label>
         <input type="text" id="speedInput" placeholder="0" inputmode="decimal" autocomplete="off">
       </div>
+
+      <!-- Jejer: dropdown dinamis, di-generate oleh js/form/jejer.js -->
+      <div id="jejerContainer"></div>
 
       <!-- Suhu dinamis: di-generate oleh js/form/suhu.js -->
       <div id="suhuContainer"></div>
@@ -332,6 +335,7 @@
   <script src="js/form/list.js"></script>
   <script src="js/form/input.js"></script>
   <script src="js/form/suhu.js"></script>
+  <script src="js/form/jejer.js"></script>
   <script src="js/form/speed.js"></script>
   <script src="js/form/crud.js"></script>
   <script src="js/form/events.js"></script>
