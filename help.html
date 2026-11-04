@@ -11,8 +11,8 @@
   <h3>📋 Ringkasan Aplikasi</h3>
   <p>
     Aplikasi input &amp; rekap <strong>speed mesin cutting</strong> beserta
-    <strong>suhu thermocontrol</strong> per mesin. Data tersimpan di Google Sheets
-    melalui Google Apps Script.
+    <strong>suhu thermocontrol</strong> dan <strong>jejer</strong> per mesin.
+    Data tersimpan di Google Sheets melalui Google Apps Script.
   </p>
 
   <h3>🚀 Cara Input Data</h3>
@@ -21,7 +21,9 @@
     <li>Klik salah satu tombol mesin di panel <strong>Daftar Mesin</strong>.</li>
     <li>Isi <strong>No SPK</strong> — bisa diketik manual atau scan barcode (tombol 📷).</li>
     <li>Tunggu preview SPK muncul (hijau = valid).</li>
-    <li>Isi <strong>Speed</strong> (pcs/menit) dan <strong>Suhu</strong> (jika mesin punya thermocontrol).</li>
+    <li>Isi <strong>Speed</strong> (pcs/menit).</li>
+    <li>Pilih <strong>Jejer</strong> dari dropdown (1 s/d max).</li>
+    <li>Isi <strong>Suhu</strong> (jika mesin punya thermocontrol).</li>
     <li>Tekan <strong>OK</strong> untuk menambah baris (masuk pending).</li>
     <li>Ulangi untuk mesin lain, lalu tekan <strong>Simpan ke Sheet Inputan</strong> untuk mengirim semua pending sekaligus.</li>
   </ol>
@@ -48,13 +50,25 @@
     <li><strong>Cetak</strong> tampil hanya kalau kolom "Cetakan Tambak Rejo" di DB SPK ada isi.</li>
   </ul>
 
+  <h3>🔢 Jejer</h3>
+  <p>
+    <strong>Jejer</strong> = berapa banyak plastik rol yang disusun berjajar dalam sekali potong.
+    Nilainya angka (1 sampai nilai maksimum yang dikonfigurasi).
+  </p>
+  <ul>
+    <li>Pilih jejer dari dropdown di overlay input (setelah Speed, sebelum Suhu).</li>
+    <li><strong>Wajib diisi</strong> — tombol OK tidak akan aktif kalau jejer belum dipilih.</li>
+    <li>Nilai maksimum jejer dikonfigurasi admin di sheet <code>Mesin</code> cell <code>J2</code>.</li>
+    <li>Jejer juga tampil di card list mesin, detail cell rekap, dan rekap per mesin.</li>
+  </ul>
+
   <h3>📊 Cara Rekap</h3>
   <ol>
     <li>Pindah ke tab <strong>Rekap Speed</strong>.</li>
     <li>Pilih <strong>Tanggal Awal</strong> dan <strong>Tanggal Akhir</strong> (maks 7 hari).</li>
     <li>Centang <strong>Shift</strong> yang ingin ditampilkan.</li>
     <li>Klik <strong>Tampilkan Rekap</strong>.</li>
-    <li>Double click / tahan pada cell speed untuk melihat detail (No SPK, Spesifikasi, Speed, Suhu).</li>
+    <li>Double click / tahan pada cell speed untuk melihat detail (No SPK, Spesifikasi, Speed, Jejer, Suhu).</li>
     <li>Double click / tahan pada nama mesin untuk melihat rekap lengkap mesin tersebut.</li>
   </ol>
 
@@ -79,6 +93,7 @@
   <ul>
     <li><strong>Speed:</strong> pcs/menit</li>
     <li><strong>Suhu:</strong> °C</li>
+    <li><strong>Jejer:</strong> angka (1 s/d max)</li>
   </ul>
 
   <h3>💾 Edit &amp; Hapus</h3>
@@ -91,8 +106,10 @@
   <h3>📝 Catatan</h3>
   <ul>
     <li>Suhu boleh kosong (mesin mati / tidak punya thermocontrol tertentu).</li>
+    <li>Jejer wajib diisi — tidak boleh kosong.</li>
     <li>Anti-dobel: baris identik dalam 200 baris terakhir akan dilewati.</li>
     <li>Pastikan jam device benar (auto time) supaya tanggal &amp; shift otomatis akurat.</li>
+    <li>Kalau update file ARD (DB SPK), jalankan <code>clearCache()</code> di editor GAS supaya web langsung mengenali SPK baru.</li>
   </ul>
 
   <p class="help-footer">
