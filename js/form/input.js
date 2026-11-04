@@ -1,5 +1,5 @@
 /* ============================================================
-   FORM — OVERLAY INPUT (SPK + Speed + Suhu Dinamis)
+   FORM — OVERLAY INPUT (SPK + Speed + Jejer + Suhu Dinamis)
    ============================================================
    - SPK lookup dari masterSPK (cache offline)
    - Validasi:
@@ -7,6 +7,7 @@
      * SPK valid kalau panjangPot ada isinya & bukan "0"
        (kalau kosong/0 → "Bukan SPK Potong!")
    - Speed: input angka (tanpa min/max)
+   - Jejer: dropdown 1..maxJejer (dari js/form/jejer.js)
    - Suhu: dinamis per mesin (jumlah & label dari mesinDetailMap)
    - Mode: tambah / edit (pending / server)
    ============================================================ */
@@ -28,9 +29,9 @@
   let currentSPKValid = false;
 
   let formMode = 'tambah';          /* 'tambah' | 'edit' */
-  let editId = null;                /* ID server (kalau edit server) */
-  let pendingEditIndex = null;      /* index pending (kalau edit pending) */
-  let formOriginList = false;       /* true kalau dibuka dari overlay list */
+  let editId = null;
+  let pendingEditIndex = null;
+  let formOriginList = false;
 
   let lookupSeq = 0;
   let lookupDebounceTimer = null;
@@ -41,7 +42,7 @@
   let pendingDeleteIndex = null;
 
   /* ============================================================
-     GETTER internal (dipakai modul form lain)
+     GETTER internal
      ============================================================ */
   function getCurrentMesin() { return currentMesin; }
   APP.getCurrentMesin = getCurrentMesin;
@@ -112,6 +113,7 @@
     /* Nilai awal (kalau edit) */
     let initSPK = '';
     let initSpeed = '';
+    let initJejer = '';
     let initSuhu = [];
 
     if (formMode === 'edit') {
@@ -123,6 +125,7 @@
         if (p) {
           initSPK = p.noSPK || '';
           initSpeed = p.speed || '';
+          initJejer = p.jejer || '';
           initSuhu = Array.isArray(p.suhu) ? p.suhu.slice() : [];
         }
       } else if (editId) {
@@ -131,11 +134,12 @@
         if (found) {
           initSPK = found.noSPK || '';
           initSpeed = found.speed || '';
+          initJejer = found.jejer || '';
           initSuhu = Array.isArray(found.suhu) ? found.suhu.slice() : [];
         }
       }
 
-      /* Normalisasi panjang initSuhu sesuai suhuLabels */
+      /* Normalisasi panjang initSuhu */
       if (!Array.isArray(initSuhu)) initSuhu = [];
       while (initSuhu.length < suhuLen) initSuhu.push('');
     }
@@ -146,7 +150,10 @@
     if (spkInput) spkInput.value = initSPK;
     if (speedInput) speedInput.value = initSpeed;
 
-    /* Build suhu inputboxes (dinamis) — dari js/form/suhu.js */
+    /* Build jejer dropdown (dari js/form/jejer.js) */
+    if (APP.buildJejerInput) APP.buildJejerInput(initJejer);
+
+    /* Build suhu inputboxes (dari js/form/suhu.js) */
     if (APP.buildSuhuInputs) APP.buildSuhuInputs(namaMesin, initSuhu);
 
     /* Reset info SPK */
@@ -191,7 +198,8 @@
       lookupDebounceTimer = null;
     }
 
-    /* Bersihkan input suhu */
+    /* Bersihkan input jejer & suhu */
+    if (APP.resetJejer) APP.resetJejer();
     const suhuContainer = $('suhuContainer');
     if (suhuContainer) suhuContainer.innerHTML = '';
 
@@ -205,7 +213,7 @@
   APP.closeInputOverlay = closeInputOverlay;
 
   /* ============================================================
-     SPK INFO (kotak preview)
+     SPK INFO
      ============================================================ */
   function resetSPKInfo() {
     const box = $('spkInfo');
@@ -232,7 +240,6 @@
     const el = $('spkInput');
     if (!el) return;
 
-    /* Sanitasi: hanya angka */
     const before = el.value;
     const after = before.replace(/[^0-9]/g, '');
     if (before !== after) el.value = after;
@@ -285,7 +292,6 @@
   function runSPKLookup(noSPK) {
     const seq = ++lookupSeq;
 
-    /* Pastikan master SPK sudah loaded */
     if (!APP.getMasterSPKLoaded()) {
       if (APP.getMasterSPKLoading()) {
         setTimeout(function () {
@@ -305,10 +311,7 @@
     const key = String(noSPK).trim();
     const data = masterSPK[key];
 
-    /* Validasi SPK:
-       1. Harus ditemukan di database
-       2. Harus punya panjangPot (bukan kosong, bukan "0")
-          → kalau tidak, "Bukan SPK Potong!" */
+    /* Validasi: harus ada di DB + harus punya panjangPot */
     let errorMsg = '';
     let valid = false;
 
@@ -357,7 +360,6 @@
     }
 
     if (!res.valid) {
-      /* Data ditemukan tapi bukan SPK Potong (panjangPot kosong/0) */
       currentSPKData = res.data || null;
       currentSPKValid = false;
       setSPKInfo(res.error || 'SPK tidak valid.', 'error');
@@ -371,7 +373,6 @@
     currentSPKData = res.data;
     currentSPKValid = true;
 
-    /* Preview notasi: <Jenis> <Tebal> x <Lebar[/Lipat]> x <PanjangPot>        BD <BD> */
     const teks = APP.formatSPKInfo(res.data);
     setSPKInfo(teks, 'success');
     playBeepSuccess();
@@ -379,7 +380,7 @@
   }
 
   /* ============================================================
-     UPDATE OK STATE (enable/disable tombol OK)
+     UPDATE OK STATE (SPK + Speed + Jejer + Suhu)
      ============================================================ */
   function updateOkState() {
     const btnOk = $('btnOk');
@@ -389,17 +390,15 @@
     const speedOk = speedEl && speedEl.value.trim() !== '';
 
     const spkOk = currentSPKValid;
-
-    /* Suhu: semua boleh kosong, tapi kalau ada yang bukan angka → invalid.
-       Validasi detail suhu ada di js/form/suhu.js via APP.isSuhuValid() */
+    const jejerOk = APP.isJejerValid ? APP.isJejerValid() : true;
     const suhuOk = APP.isSuhuValid ? APP.isSuhuValid() : true;
 
-    btnOk.disabled = !(spkOk && speedOk && suhuOk);
+    btnOk.disabled = !(spkOk && speedOk && jejerOk && suhuOk);
   }
   APP.updateOkState = updateOkState;
 
   /* ============================================================
-     CONFIRM DELETE (untuk Hapus di list)
+     CONFIRM DELETE
      ============================================================ */
   function openConfirmOverlay(id, mesin, pIndex) {
     confirmId = id || null;
@@ -425,9 +424,6 @@
   }
   APP.closeConfirmOverlay = closeConfirmOverlay;
 
-  /* ============================================================
-     GETTER confirm state (dipakai di crud.js)
-     ============================================================ */
   function getConfirmState() {
     return {
       id: confirmId,
