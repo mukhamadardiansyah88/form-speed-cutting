@@ -31,6 +31,11 @@
   <div class="orb orb2"></div>
   <div class="orb orb3"></div>
 
+  <!-- ============================================================
+       TOMBOL HELP MENGAMBANG (pojok kanan atas, fixed)
+       ============================================================ -->
+  <button class="btn-help" id="btnHelp" type="button" aria-label="Bantuan" title="Aturan Main / Cara Pakai">?</button>
+
   <div class="container">
 
     <header>
@@ -44,9 +49,6 @@
       <button class="tab-btn" id="tabRekap" data-tab="rekap" type="button">Rekap Speed</button>
     </div>
 
-    <!-- ============================================================
-         HALAMAN 1: FORM INPUT
-         ============================================================ -->
     <div id="pageForm">
 
       <div class="panel">
@@ -103,9 +105,6 @@
 
     </div>
 
-    <!-- ============================================================
-         HALAMAN 2: REKAP
-         ============================================================ -->
     <div id="pageRekap" class="hidden">
 
       <div class="panel">
@@ -167,6 +166,28 @@
       <div class="footer-line"></div>
     </footer>
 
+  </div>
+
+  <!-- ============================================================
+       OVERLAY HELP (Aturan Main / Cara Pakai)
+       ============================================================ -->
+  <div class="overlay" id="overlayHelp">
+    <div class="modal modal-help">
+      <div class="modal-header">
+        <div class="modal-title">📖 Aturan Main / Cara Pakai</div>
+        <button class="close-btn" id="btnCloseHelp" type="button">✕</button>
+      </div>
+
+      <div class="help-body" id="helpContainer">
+        <div class="loading-wrap">
+          <span class="loading"></span> Memuat bantuan...
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:18px;">
+        <button class="btn btn-primary" id="btnTutupHelp" type="button">Tutup</button>
+      </div>
+    </div>
   </div>
 
   <!-- ============================================================
