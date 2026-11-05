@@ -6,6 +6,7 @@
    - Tidak ada below-min (tidak ada validasi min/max)
    - Double click / long press pada cell → bukaInfoDetail
    - Double click / long press pada nama mesin → bukaRekapMesin
+   - Field jejer disertakan supaya tampil di detail cell
    ============================================================ */
 
 (function () {
@@ -67,7 +68,7 @@
       return;
     }
 
-    /* Index data: map[mesin][tanggal][shift] = [ { id, noSPK, speed, suhu } ] */
+    /* Index data: map[mesin][tanggal][shift] = [ { id, noSPK, speed, jejer, suhu } ] */
     const map = {};
     APP.getRekapRawData().forEach(function (r) {
       if (shiftChecked.indexOf(r.shift) === -1) return;
@@ -78,6 +79,7 @@
         id: r.id,
         noSPK: r.noSPK,
         speed: r.speed,
+        jejer: r.jejer || '',
         suhu: r.suhu || []
       });
     });
