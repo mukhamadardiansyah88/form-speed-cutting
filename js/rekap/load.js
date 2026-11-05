@@ -1,9 +1,12 @@
 /* ============================================================
-   REKAP — LOAD (Ambil data rekap dari GAS) ok
+   REKAP — LOAD (Ambil data rekap dari GAS)
    ============================================================
    - loadRekap: ambil data untuk rentang tanggal awal–akhir
    - Data disimpan di APP.rekapRawData, flag APP.rekapLoaded = true
    - renderRekapFromCache dipanggil setelah data siap
+
+   Catatan: field jejer disertakan supaya tampil di detail cell
+   & rekap mesin.
    ============================================================ */
 
 (function () {
@@ -74,6 +77,7 @@
             noSPK: row.noSPK,
             shift: row.shift,
             speed: row.speed,
+            jejer: String(row.jejer || '').trim(),
             suhu: suhuArr
           };
         });
