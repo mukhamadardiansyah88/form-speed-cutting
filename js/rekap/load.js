@@ -1,5 +1,5 @@
 /* ============================================================
-   REKAP — LOAD (Ambil data rekap dari GAS)
+   REKAP — LOAD (Ambil data rekap dari GAS) ok
    ============================================================
    - loadRekap: ambil data untuk rentang tanggal awal–akhir
    - Data disimpan di APP.rekapRawData, flag APP.rekapLoaded = true
